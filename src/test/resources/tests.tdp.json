@@ -1,4 +1,10 @@
 {
+  "validator": {
+    "version": "4.0",
+    "igs": [
+      "src/test/resources/fsh-generated/resources"
+    ]
+  },
   "testCases": [
     {
       "resource": "valid/message-with-valid-her-id.json",
