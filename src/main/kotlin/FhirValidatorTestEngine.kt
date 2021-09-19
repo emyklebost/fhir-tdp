@@ -103,9 +103,7 @@ private class TestCaseDescriptor(parentId: UniqueId, name: String, private val t
 }
 
 private class ExpectedIssueCheckDescriptor(parentId: UniqueId, index: Int, private val issue: Specification.Issue)
-    : AbstractTestDescriptor(
-        parentId.append<ExpectedIssueCheckDescriptor>("$index"),
-        "Should have issue with severity=${issue.severity}") {
+    : AbstractTestDescriptor(parentId.append<ExpectedIssueCheckDescriptor>("$index"), "Should have issue with severity=${issue.severity}") {
     override fun getType() = TestDescriptor.Type.TEST
 
     fun execute(result: TestResult) {
@@ -117,9 +115,7 @@ private class ExpectedIssueCheckDescriptor(parentId: UniqueId, index: Int, priva
 }
 
 private class NoUnexpectedErrorsCheckDescriptor(parentId: UniqueId)
-    : AbstractTestDescriptor(
-        parentId.append<NoUnexpectedErrorsCheckDescriptor>("no"),
-        "Should not have any unexpected errors") {
+    : AbstractTestDescriptor(parentId.append<NoUnexpectedErrorsCheckDescriptor>("no"), "Should not have any unexpected errors") {
     override fun getType() = TestDescriptor.Type.TEST
 
     fun execute(result: TestResult) {
