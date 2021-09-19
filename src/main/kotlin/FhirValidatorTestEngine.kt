@@ -114,10 +114,10 @@ private class NoUnexpectedErrorsCheckDescriptor(uniqueId: UniqueId)
     fun execute(result: TestResult) {
         println("Check if there are any unexpected errors.")
         if (result.unexpectedErrors.any()) {
-            val failureMessage = StringBuilder().run {
+            val failureMessage = StringBuilder().apply {
                 appendLine("The resource has unexpected errors:")
                 result.unexpectedErrors.forEach { appendLine("- $it") }
-            }
+            }.toString()
 
             throw AssertionError(failureMessage)
         }

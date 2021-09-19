@@ -5,12 +5,18 @@ import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r5.model.OperationOutcome
 import org.hl7.fhir.validation.ValidationEngine
 
+data class TestResult(
+    val missingIssues: List<Specification.Issue>,
+    val unexpectedErrors: List<Specification.Issue>)
+
 class ProfileValidationTest(private val validator: ValidationEngine) {
     fun run(case: Specification.TestCase): TestResult {
+        repeat(2) { println() } // Empty lines for log readability.
+
         val outcome = validator.validate("src/test/resources/${case.resource}", listOf(case.profile))
         val issues = outcome.issue.map { it.toData() }
 
-        outcome.text = null // Just noise when displayed in a terminal.
+        outcome.text = null // <- Removed because this is just noise when displayed in a terminal.
         println(outcome.toJson())
 
         val missingIssues = case.expectedIssues
@@ -32,10 +38,6 @@ private fun Specification.Issue.matches(other: Specification.Issue): Boolean {
     if (location != null && location != other.location) return false
     return (message == null || (other.message?.contains(message, ignoreCase = true) == true))
 }
-
-data class TestResult(
-    val missingIssues: List<Specification.Issue>,
-    val unexpectedErrors: List<Specification.Issue>)
 
 private fun IBaseResource.toJson(): String {
     // Not thread safe, new instance must therefore be created.
