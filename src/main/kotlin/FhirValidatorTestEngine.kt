@@ -8,7 +8,8 @@ import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.TestEngine
 import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.UniqueId
-import org.junit.platform.engine.discovery.ClassSelector
+import org.junit.platform.engine.discovery.DirectorySelector
+import org.junit.platform.engine.discovery.FileSelector
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
 import java.io.File
@@ -22,10 +23,20 @@ class FhirValidatorTestEngine : TestEngine {
 
         val specFiles = mutableListOf<File>()
 
-        if (discoveryRequest.getSelectorsByType(ClassSelector::class.java).any {
-                it.className == "FhirTestInitializer" }) {
-            specFiles.add(File("src/test/resources/tests.tdp.json"))
+        discoveryRequest.apply {
+            specFiles.addAll(getSelectorsByType(FileSelector::class.java).map { it.file })
+
+            val files = getSelectorsByType(DirectorySelector::class.java)
+                .map { it.directory }
+                .ifEmpty { listOf(File("src/test/resources")) }
+                .flatMap { it.walk() }
+                .filter { it.endsWith(".tdp.json") || it.endsWith(".tdp.yml") || it.endsWith(".tdp.yaml") }
+
+            specFiles.addAll(files)
         }
+
+        if (specFiles.isEmpty())
+            specFiles.add(File("src/test/resources/tests.tdp.json"))
 
         specFiles.forEach {
             val spec = ConfigLoader().loadConfigOrThrow<Specification>(it)
