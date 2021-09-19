@@ -19,32 +19,30 @@ class FhirValidatorTestEngine : TestEngine {
     override fun getId() = "fhir"
 
     override fun discover(discoveryRequest: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor {
-        val rootDesc = EngineDescriptor(uniqueId, "FHIR Validator Tests")
+        val testRoot = EngineDescriptor(uniqueId, "FHIR Validator Tests")
 
         val specFiles = mutableListOf<File>()
 
         discoveryRequest.apply {
-            specFiles.addAll(getSelectorsByType(FileSelector::class.java).map { it.file })
+            val fileExt = listOf("test.json", "test.yml", "test.yaml", "test.properties")
 
             val files = getSelectorsByType(DirectorySelector::class.java)
                 .map { it.directory }
                 .ifEmpty { listOf(File("src/test/resources")) }
                 .flatMap { it.walk() }
-                .filter { it.endsWith(".tdp.json") || it.endsWith(".tdp.yml") || it.endsWith(".tdp.yaml") }
+                .filter { fileExt.any { ext -> it.name.endsWith(ext, ignoreCase = true) } }
 
             specFiles.addAll(files)
+            specFiles.addAll(getSelectorsByType(FileSelector::class.java).map { it.file })
         }
-
-        if (specFiles.isEmpty())
-            specFiles.add(File("src/test/resources/tests.tdp.json"))
 
         specFiles.forEach {
             val spec = ConfigLoader().loadConfigOrThrow<Specification>(it)
-            val testSuite = TestSuiteDescriptor(rootDesc.uniqueId, it.name, spec)
-            rootDesc.addChild(testSuite)
+            val testSuite = TestSuiteDescriptor(testRoot.uniqueId, it.name, spec)
+            testRoot.addChild(testSuite)
         }
 
-        return rootDesc
+        return testRoot
     }
 
     override fun execute(request: ExecutionRequest) {
@@ -54,20 +52,20 @@ class FhirValidatorTestEngine : TestEngine {
         listener.scope(testRoot) {
             testRoot.children
                 .mapNotNull { it as? TestSuiteDescriptor }
-                .forEach { testSuite -> listener.scope(testSuite) { it.execute(listener) } }
+                .forEach { listener.scope(it) { it.execute(listener) } }
         }
     }
 }
 
-private class TestSuiteDescriptor(engineId: UniqueId, displayName: String, private val spec: Specification)
-    : AbstractTestDescriptor(engineId.append(TestSuiteDescriptor::class.simpleName, displayName), displayName) {
-    override fun getType() = TestDescriptor.Type.CONTAINER
+private class TestSuiteDescriptor(parentId: UniqueId, name: String, private val spec: Specification)
+    : AbstractTestDescriptor(parentId.append<TestSuiteDescriptor>(name), name) {
     init {
         spec.testCases.forEach {
-            val testCase = TestCaseDescriptor(uniqueId, it.resource, it)
-            addChild(testCase)
+            addChild(TestCaseDescriptor(uniqueId, it.resource, it))
         }
     }
+
+    override fun getType() = TestDescriptor.Type.CONTAINER
 
     fun execute(listener: EngineExecutionListener) {
         val validator = ValidatorFactory.create(spec.validator)
@@ -75,39 +73,39 @@ private class TestSuiteDescriptor(engineId: UniqueId, displayName: String, priva
 
         children
             .mapNotNull { it as? TestCaseDescriptor }
-            .forEach { testCase -> listener.scope(testCase) { it.execute(testRunner, listener) } }
+            .forEach { listener.scope(it) { it.execute(testRunner, listener) } }
     }
 }
 
-private class TestCaseDescriptor(engineId: UniqueId, displayName: String, private val testCase: Specification.TestCase)
-    : AbstractTestDescriptor(engineId.append(TestCaseDescriptor::class.simpleName, displayName), displayName) {
-    override fun getType() = TestDescriptor.Type.CONTAINER
+private class TestCaseDescriptor(parentId: UniqueId, name: String, private val testCase: Specification.TestCase)
+    : AbstractTestDescriptor(parentId.append<TestCaseDescriptor>(name), name) {
     init {
         testCase.expectedIssues.forEachIndexed { i, it ->
-            val id = uniqueId.append(ExpectedIssueCheckDescriptor::class.simpleName, i.toString())
-            val expectedIssue = ExpectedIssueCheckDescriptor(id, it)
-            addChild(expectedIssue)
+            addChild(ExpectedIssueCheckDescriptor(uniqueId, i, it))
         }
 
-        val id = uniqueId.append(NoUnexpectedErrorsCheckDescriptor::class.simpleName, "no")
-        addChild(NoUnexpectedErrorsCheckDescriptor(id))
+        addChild(NoUnexpectedErrorsCheckDescriptor(uniqueId))
     }
+
+    override fun getType() = TestDescriptor.Type.CONTAINER
 
     fun execute(testRunner: ProfileValidationTest, listener: EngineExecutionListener) {
         val result = testRunner.run(testCase)
 
         children
             .mapNotNull { it as? ExpectedIssueCheckDescriptor }
-            .forEach { check -> listener.scope(check) { it.execute(result) } }
+            .forEach { listener.scope(it) { it.execute(result) } }
 
         children
             .mapNotNull { it as? NoUnexpectedErrorsCheckDescriptor }
-            .forEach { check -> listener.scope(check) { it.execute(result) } }
+            .forEach { listener.scope(it) { it.execute(result) } }
     }
 }
 
-private class ExpectedIssueCheckDescriptor(uniqueId: UniqueId, val issue: Specification.Issue)
-    : AbstractTestDescriptor(uniqueId, "Should have issue with severity=${issue.severity}") {
+private class ExpectedIssueCheckDescriptor(parentId: UniqueId, index: Int, private val issue: Specification.Issue)
+    : AbstractTestDescriptor(
+        parentId.append<ExpectedIssueCheckDescriptor>("$index"),
+        "Should have issue with severity=${issue.severity}") {
     override fun getType() = TestDescriptor.Type.TEST
 
     fun execute(result: TestResult) {
@@ -118,8 +116,10 @@ private class ExpectedIssueCheckDescriptor(uniqueId: UniqueId, val issue: Specif
     }
 }
 
-private class NoUnexpectedErrorsCheckDescriptor(uniqueId: UniqueId)
-    : AbstractTestDescriptor(uniqueId, "Should not have any unexpected errors") {
+private class NoUnexpectedErrorsCheckDescriptor(parentId: UniqueId)
+    : AbstractTestDescriptor(
+        parentId.append<NoUnexpectedErrorsCheckDescriptor>("no"),
+        "Should not have any unexpected errors") {
     override fun getType() = TestDescriptor.Type.TEST
 
     fun execute(result: TestResult) {
@@ -136,13 +136,15 @@ private class NoUnexpectedErrorsCheckDescriptor(uniqueId: UniqueId)
     }
 }
 
-private inline fun <T : TestDescriptor> EngineExecutionListener.scope(testDescriptor: T, execute: (T) -> Unit) {
+private inline fun <T : TestDescriptor> EngineExecutionListener.scope(testDescriptor: T, execute: () -> Unit) {
     try {
         executionStarted(testDescriptor)
-        execute(testDescriptor)
+        execute()
         executionFinished(testDescriptor, TestExecutionResult.successful())
     }
     catch (error: Throwable) {
         executionFinished(testDescriptor, TestExecutionResult.failed(error))
     }
 }
+
+private inline fun <reified T> UniqueId.append(value: String) = append(T::class.simpleName, value)
