@@ -1,4 +1,4 @@
 ## Run with JUnit Console Launcher
 ```
-java -jar junit.jar -cp build\classes\kotlin\test:build\libs\fhir-tdp-all.jar -c ProfileValidationTest
+java -jar junit.jar -cp build\libs\fhir-tdp-0.1.0-all.jar -d src\test\resources
 ```
