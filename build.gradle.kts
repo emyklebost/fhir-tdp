@@ -34,6 +34,4 @@ dependencies {
     implementation("com.sksamuel.hoplite:hoplite-yaml:1.4.7")
     implementation("com.squareup.okhttp3:okhttp:4.9.1")
     implementation("org.slf4j:slf4j-nop:1.7.32")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.0")
 }
