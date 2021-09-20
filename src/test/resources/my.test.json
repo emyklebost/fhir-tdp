@@ -2,7 +2,7 @@
   "validator": {
     "version": "4.0",
     "igs": [
-      "src/test/resources/fsh-generated/resources"
+      "src/test/resources/fhir"
     ]
   },
   "testCases": [
@@ -18,6 +18,11 @@
           "severity": "ERROR",
           "location": "Bundle.entry[0].resource.ofType(MessageHeader).destination[0].endpoint",
           "message": "valid-her-id"
+        },
+        {
+          "severity": "ERROR",
+          "location": "Bundle.entry[0].resource.ofType(MessageHeader).source.endpoint",
+          "message": "message that does not exist"
         }
       ]
     }

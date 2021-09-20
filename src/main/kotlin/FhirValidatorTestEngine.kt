@@ -17,7 +17,6 @@ class FhirValidatorTestEngine : TestEngine {
 
             val files = getSelectorsByType(DirectorySelector::class.java)
                 .map { it.directory }
-                .ifEmpty { listOf(File("src/test/resources")) }
                 .flatMap { it.walk() }
                 .filter { fileExt.any { ext -> it.name.endsWith(ext, ignoreCase = true) } }
 
