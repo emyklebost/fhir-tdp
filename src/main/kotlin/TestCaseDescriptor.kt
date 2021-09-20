@@ -10,16 +10,6 @@ import org.junit.platform.engine.reporting.ReportEntry
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.support.descriptor.FileSource
 
-class TestSuiteDescriptor(id: UniqueId, name: String) : AbstractTestDescriptor(id, name) {
-    override fun getType() = TestDescriptor.Type.CONTAINER
-    fun execute(listener: EngineExecutionListener) =
-        listener.scope(this) {
-            children
-                .mapNotNull { it as? TestCaseDescriptor }
-                .forEach { listener.scope(it) { it.execute(listener) } }
-        }
-}
-
 class TestCaseDescriptor(
     id: UniqueId,
     private val testCase: Specification.TestCase,

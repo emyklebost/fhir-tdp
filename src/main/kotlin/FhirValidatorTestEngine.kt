@@ -4,6 +4,7 @@ import com.sksamuel.hoplite.ConfigLoader
 import org.junit.platform.engine.*
 import org.junit.platform.engine.discovery.DirectorySelector
 import org.junit.platform.engine.discovery.FileSelector
+import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
 import org.junit.platform.engine.support.descriptor.FileSource
 import java.nio.file.Files
@@ -70,4 +71,14 @@ private fun createRootTestDescriptor(engineId: UniqueId, specFiles: List<Path>):
     }
 
     return rootTestDesc
+}
+
+private class TestSuiteDescriptor(id: UniqueId, name: String) : AbstractTestDescriptor(id, name) {
+    override fun getType() = TestDescriptor.Type.CONTAINER
+    fun execute(listener: EngineExecutionListener) =
+        listener.scope(this) {
+            children
+                .mapNotNull { it as? TestCaseDescriptor }
+                .forEach { listener.scope(it) { it.execute(listener) } }
+        }
 }
