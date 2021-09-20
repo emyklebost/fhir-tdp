@@ -3,6 +3,7 @@ package no.nav.helse
 import org.hl7.fhir.r5.model.OperationOutcome
 import org.opentest4j.AssertionFailedError
 import org.junit.platform.engine.*
+import org.junit.platform.engine.reporting.ReportEntry
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 
 abstract class ExpectationDescriptor(
@@ -18,10 +19,13 @@ class HasExpectedIssueDescriptor(
     id: UniqueId,
     private val issue: Specification.Issue,
     source: TestSource? = null
-) : ExpectationDescriptor(id, "Should have issue with severity=${issue.severity}", source) {
+) : ExpectationDescriptor(id, "Should have expected issue: ${id.lastSegment.value}", source) {
     override fun execute(listener: EngineExecutionListener, outcome: OperationOutcome) =
         listener.scope(this) {
             println("Check if validation result contains $issue.")
+
+            listener.reportingEntryPublished(this, ReportEntry.from(issue.asMap()))
+
             if (outcome.issue.map { it.toData() }.none { issue.matches(it) }) {
                 throw AssertionError("Expected issue was not found: $issue.")
             }
@@ -65,3 +69,11 @@ private fun Specification.Issue.matches(other: Specification.Issue): Boolean {
     if (location != null && location != other.location) return false
     return (message == null || (other.message?.contains(message, ignoreCase = true) == true))
 }
+
+private fun Specification.Issue.asMap() =
+    mapOf(
+        Pair("severity", severity.toCode().uppercase()),
+        Pair("type", type?.toCode()?.uppercase()),
+        Pair("location", location),
+        Pair("message", message),
+    ).filterValues { it != null }

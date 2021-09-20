@@ -6,6 +6,7 @@ import org.hl7.fhir.validation.ValidationEngine
 import org.junit.platform.engine.EngineExecutionListener
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.UniqueId
+import org.junit.platform.engine.reporting.ReportEntry
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.support.descriptor.FileSource
 import java.io.File
@@ -29,6 +30,8 @@ class TestCaseDescriptor(
     override fun getType() = TestDescriptor.Type.CONTAINER
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {
+            listener.reportingEntryPublished(this, ReportEntry.from("profile", testCase.profile))
+
             val specFile = (source.get() as FileSource).file
             val resourcePath = specFile.parentFile.resolve(File(testCase.resource)).toString()
             val outcome = validator.validate(resourcePath, listOf(testCase.profile))

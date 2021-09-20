@@ -9,7 +9,7 @@ import org.junit.platform.engine.support.descriptor.FileSource
 import java.io.File
 
 class FhirValidatorTestEngine : TestEngine {
-    override fun getId() = "fhir"
+    override fun getId() = "fhir-validator"
 
     override fun discover(discoveryRequest: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor {
         val specFiles = discoveryRequest.run {
@@ -28,11 +28,11 @@ class FhirValidatorTestEngine : TestEngine {
     }
 
     override fun execute(request: ExecutionRequest) {
-        val testRoot = request.rootTestDescriptor
+        val rootTestDesc = request.rootTestDescriptor
         val listener = request.engineExecutionListener
 
-        listener.scope(testRoot) {
-            testRoot.children
+        listener.scope(rootTestDesc) {
+            rootTestDesc.children
                 .mapNotNull { it as? TestSuiteDescriptor }
                 .forEach { listener.scope(it) { it.execute(listener) } }
         }
@@ -40,7 +40,7 @@ class FhirValidatorTestEngine : TestEngine {
 }
 
 private fun createTestEngineDescriptor(engineId: UniqueId, specFiles: List<File>): EngineDescriptor {
-    val testEngineDesc = EngineDescriptor(engineId, "FHIR Validator")
+    val rootTestDesc = EngineDescriptor(engineId, "FHIR Validator")
 
     specFiles.forEachIndexed { i0, file ->
         val testSuiteId = engineId.append<TestSuiteDescriptor>("$i0")
@@ -64,8 +64,8 @@ private fun createTestEngineDescriptor(engineId: UniqueId, specFiles: List<File>
             testSuiteDesc.addChild(testCaseDesc)
         }
 
-        testEngineDesc.addChild(testSuiteDesc)
+        rootTestDesc.addChild(testSuiteDesc)
     }
 
-    return testEngineDesc
+    return rootTestDesc
 }
