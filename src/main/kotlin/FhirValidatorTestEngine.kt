@@ -40,11 +40,11 @@ class FhirValidatorTestEngine : TestEngine {
 }
 
 private fun createTestEngineDescriptor(engineId: UniqueId, specFiles: List<File>): EngineDescriptor {
-    val testEngineDesc = EngineDescriptor(engineId, "FHIR Validator Tests")
+    val testEngineDesc = EngineDescriptor(engineId, "FHIR Validator")
 
     specFiles.forEachIndexed { i0, file ->
         val testSuiteId = engineId.append<TestSuiteDescriptor>("$i0")
-        val testSuiteDesc = TestSuiteDescriptor(testSuiteId, file.nameWithoutExtension)
+        val testSuiteDesc = TestSuiteDescriptor(testSuiteId, file.name)
 
         val spec = ConfigLoader().loadConfigOrThrow<Specification>(file)
         val validator = ValidatorFactory.create(spec.validator)

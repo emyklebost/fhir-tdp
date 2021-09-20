@@ -29,8 +29,6 @@ class TestCaseDescriptor(
     override fun getType() = TestDescriptor.Type.CONTAINER
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {
-            repeat(2) { println() } // Empty lines for log readability.
-
             val specFile = (source.get() as FileSource).file
             val resourcePath = specFile.parentFile.resolve(File(testCase.resource)).toString()
             val outcome = validator.validate(resourcePath, listOf(testCase.profile))
