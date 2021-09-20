@@ -1,29 +1,18 @@
 package no.nav.helse
 
 import com.sksamuel.hoplite.ConfigLoader
-import org.junit.platform.engine.EngineDiscoveryRequest
-import org.junit.platform.engine.EngineExecutionListener
-import org.junit.platform.engine.ExecutionRequest
-import org.junit.platform.engine.TestDescriptor
-import org.junit.platform.engine.TestEngine
-import org.junit.platform.engine.TestExecutionResult
-import org.junit.platform.engine.UniqueId
+import org.junit.platform.engine.*
 import org.junit.platform.engine.discovery.DirectorySelector
 import org.junit.platform.engine.discovery.FileSelector
-import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
+import org.junit.platform.engine.support.descriptor.FileSource
 import java.io.File
-import java.lang.AssertionError
 
 class FhirValidatorTestEngine : TestEngine {
     override fun getId() = "fhir"
 
     override fun discover(discoveryRequest: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor {
-        val testRoot = EngineDescriptor(uniqueId, "FHIR Validator Tests")
-
-        val specFiles = mutableListOf<File>()
-
-        discoveryRequest.apply {
+        val specFiles = discoveryRequest.run {
             val fileExt = listOf("test.json", "test.yml", "test.yaml", "test.properties")
 
             val files = getSelectorsByType(DirectorySelector::class.java)
@@ -32,17 +21,10 @@ class FhirValidatorTestEngine : TestEngine {
                 .flatMap { it.walk() }
                 .filter { fileExt.any { ext -> it.name.endsWith(ext, ignoreCase = true) } }
 
-            specFiles.addAll(files)
-            specFiles.addAll(getSelectorsByType(FileSelector::class.java).map { it.file })
+            files + getSelectorsByType(FileSelector::class.java).map { it.file }
         }
 
-        specFiles.forEach {
-            val spec = ConfigLoader().loadConfigOrThrow<Specification>(it)
-            val testSuite = TestSuiteDescriptor(testRoot.uniqueId, it.name, spec)
-            testRoot.addChild(testSuite)
-        }
-
-        return testRoot
+        return createTestEngineDescriptor(uniqueId, specFiles)
     }
 
     override fun execute(request: ExecutionRequest) {
@@ -57,90 +39,33 @@ class FhirValidatorTestEngine : TestEngine {
     }
 }
 
-private class TestSuiteDescriptor(parentId: UniqueId, name: String, private val spec: Specification)
-    : AbstractTestDescriptor(parentId.append<TestSuiteDescriptor>(name), name) {
-    init {
-        spec.testCases.forEach {
-            addChild(TestCaseDescriptor(uniqueId, it.resource, it))
-        }
-    }
+private fun createTestEngineDescriptor(engineId: UniqueId, specFiles: List<File>): EngineDescriptor {
+    val testEngineDesc = EngineDescriptor(engineId, "FHIR Validator Tests")
 
-    override fun getType() = TestDescriptor.Type.CONTAINER
+    specFiles.forEachIndexed { i0, file ->
+        val testSuiteId = engineId.append<TestSuiteDescriptor>("$i0")
+        val testSuiteDesc = TestSuiteDescriptor(testSuiteId, file.nameWithoutExtension)
 
-    fun execute(listener: EngineExecutionListener) {
+        val spec = ConfigLoader().loadConfigOrThrow<Specification>(file)
         val validator = ValidatorFactory.create(spec.validator)
-        val testRunner = ProfileValidationTest(validator)
 
-        children
-            .mapNotNull { it as? TestCaseDescriptor }
-            .forEach { listener.scope(it) { it.execute(testRunner, listener) } }
-    }
-}
+        spec.testCases.forEachIndexed { i1, testCase ->
+            val testCaseId = testSuiteId.append<TestCaseDescriptor>("$i1")
+            val testCaseDesc = TestCaseDescriptor(testCaseId, testCase, validator, FileSource.from(file))
 
-private class TestCaseDescriptor(parentId: UniqueId, name: String, private val testCase: Specification.TestCase)
-    : AbstractTestDescriptor(parentId.append<TestCaseDescriptor>(name), name) {
-    init {
-        testCase.expectedIssues.forEachIndexed { i, it ->
-            addChild(ExpectedIssueCheckDescriptor(uniqueId, i, it))
+            val noUnexpectedErrorsId = testCaseId.append<HasNoUnexpectedErrorsDescriptor>("0")
+            testCaseDesc.addChild(HasNoUnexpectedErrorsDescriptor(noUnexpectedErrorsId, testCase))
+
+            testCase.expectedIssues.forEachIndexed { i2, issue ->
+                val expectedIssueId = testCaseId.append<HasExpectedIssueDescriptor>("$i2")
+                testCaseDesc.addChild(HasExpectedIssueDescriptor(expectedIssueId, issue))
+            }
+
+            testSuiteDesc.addChild(testCaseDesc)
         }
 
-        addChild(NoUnexpectedErrorsCheckDescriptor(uniqueId))
+        testEngineDesc.addChild(testSuiteDesc)
     }
 
-    override fun getType() = TestDescriptor.Type.CONTAINER
-
-    fun execute(testRunner: ProfileValidationTest, listener: EngineExecutionListener) {
-        val result = testRunner.run(testCase)
-
-        children
-            .mapNotNull { it as? ExpectedIssueCheckDescriptor }
-            .forEach { listener.scope(it) { it.execute(result) } }
-
-        children
-            .mapNotNull { it as? NoUnexpectedErrorsCheckDescriptor }
-            .forEach { listener.scope(it) { it.execute(result) } }
-    }
+    return testEngineDesc
 }
-
-private class ExpectedIssueCheckDescriptor(parentId: UniqueId, index: Int, private val issue: Specification.Issue)
-    : AbstractTestDescriptor(parentId.append<ExpectedIssueCheckDescriptor>("$index"), "Should have issue with severity=${issue.severity}") {
-    override fun getType() = TestDescriptor.Type.TEST
-
-    fun execute(result: TestResult) {
-        println("Check if validation result contains $issue.")
-        if (result.missingIssues.contains(issue))
-            throw AssertionError("Expected issue was not found: $issue.")
-        println("Issue was found!")
-    }
-}
-
-private class NoUnexpectedErrorsCheckDescriptor(parentId: UniqueId)
-    : AbstractTestDescriptor(parentId.append<NoUnexpectedErrorsCheckDescriptor>("no"), "Should not have any unexpected errors") {
-    override fun getType() = TestDescriptor.Type.TEST
-
-    fun execute(result: TestResult) {
-        println("Check if there are any unexpected errors.")
-        if (result.unexpectedErrors.any()) {
-            val failureMessage = StringBuilder().apply {
-                appendLine("The resource has unexpected errors:")
-                result.unexpectedErrors.forEach { appendLine("- $it") }
-            }.toString()
-
-            throw AssertionError(failureMessage)
-        }
-        println("No unexpected errors!")
-    }
-}
-
-private inline fun <T : TestDescriptor> EngineExecutionListener.scope(testDescriptor: T, execute: () -> Unit) {
-    try {
-        executionStarted(testDescriptor)
-        execute()
-        executionFinished(testDescriptor, TestExecutionResult.successful())
-    }
-    catch (error: Throwable) {
-        executionFinished(testDescriptor, TestExecutionResult.failed(error))
-    }
-}
-
-private inline fun <reified T> UniqueId.append(value: String) = append(T::class.simpleName, value)
