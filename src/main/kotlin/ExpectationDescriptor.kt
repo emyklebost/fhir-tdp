@@ -1,6 +1,7 @@
 package no.nav.helse
 
 import org.hl7.fhir.r5.model.OperationOutcome
+import org.opentest4j.AssertionFailedError
 import org.junit.platform.engine.*
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 
@@ -48,7 +49,7 @@ class HasNoUnexpectedErrorsDescriptor(
                     unexpectedErrors.forEach { appendLine("- $it") }
                 }.toString()
 
-                throw AssertionError(failureMessage)
+                throw AssertionFailedError(failureMessage)
             }
 
             println("No unexpected errors!")
