@@ -9,7 +9,6 @@ import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.reporting.ReportEntry
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.support.descriptor.FileSource
-import java.io.File
 
 class TestSuiteDescriptor(id: UniqueId, name: String) : AbstractTestDescriptor(id, name) {
     override fun getType() = TestDescriptor.Type.CONTAINER
@@ -26,14 +25,14 @@ class TestCaseDescriptor(
     private val testCase: Specification.TestCase,
     private val validator: ValidationEngine,
     source: FileSource,
-) : AbstractTestDescriptor(id, testCase.resource, source) {
+) : AbstractTestDescriptor(id, testCase.resource.toString(), source) {
     override fun getType() = TestDescriptor.Type.CONTAINER
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {
             listener.reportingEntryPublished(this, ReportEntry.from("profile", testCase.profile))
 
-            val specFile = (source.get() as FileSource).file
-            val resourcePath = specFile.parentFile.resolve(File(testCase.resource)).toString()
+            val specFile = (source.get() as FileSource).file.toPath()
+            val resourcePath = specFile.parent.resolve(testCase.resource).toString()
             val outcome = validator.validate(resourcePath, listOf(testCase.profile))
 
             outcome.text = null // <- Removed because this is just noise when displayed in a terminal.
