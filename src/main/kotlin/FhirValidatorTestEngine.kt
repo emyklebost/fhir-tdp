@@ -44,7 +44,7 @@ class FhirValidatorTestEngine : TestEngine {
         listener.scope(rootTestDesc) {
             rootTestDesc.children
                 .mapNotNull { it as? TestSuiteDescriptor }
-                .forEach { listener.scope(it) { it.execute(listener) } }
+                .forEach { it.execute(listener) }
         }
     }
 }
@@ -78,11 +78,12 @@ private class TestSuiteDescriptor(id: UniqueId, name: String, source: FileSource
         listener.scope(this) {
             children
                 .mapNotNull { it as? TestCaseDescriptor }
-                .forEach { listener.scope(it) { it.execute(listener) } }
+                .forEach { it.execute(listener) }
         }
 }
 
 // This can probably be done better using JsonPath or something.
+// BUG: If multiple TestCases uses the same resource they will all get FilePosition of the first.
 private fun Path.fileSource(testCase: Specification.TestCase): FileSource {
     readLines().forEachIndexed { line, str ->
         var column = str.indexOf(testCase.resource)

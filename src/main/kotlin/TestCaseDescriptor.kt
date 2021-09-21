@@ -35,7 +35,7 @@ class TestCaseDescriptor(
 
             if (failures.any()) {
                 listener.reportingEntryPublished(this, createReportEntry(testCase, specFile))
-                throw MultipleFailuresError(null, failures)
+                throw if (failures.count() == 1) failures.single() else MultipleFailuresError(null, failures)
             }
         }
 }
