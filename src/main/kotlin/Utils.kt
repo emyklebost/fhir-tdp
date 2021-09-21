@@ -1,11 +1,16 @@
 package no.nav.helse
 
+import org.hl7.fhir.r5.model.OperationOutcome
 import org.junit.platform.engine.EngineExecutionListener
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.TestExecutionResult
 import org.junit.platform.engine.UniqueId
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
+
+typealias Severity = OperationOutcome.IssueSeverity
+typealias IssueType = OperationOutcome.IssueType
+typealias IssueComponent = OperationOutcome.OperationOutcomeIssueComponent
 
 inline fun EngineExecutionListener.scope(testDescriptor: TestDescriptor, execute: () -> Unit) {
     try {

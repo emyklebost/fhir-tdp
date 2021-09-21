@@ -1,6 +1,7 @@
 package no.nav.helse
 
 import org.hl7.fhir.r5.model.OperationOutcome
+import org.hl7.fhir.r5.utils.ToolingExtensions
 import org.junit.platform.engine.EngineExecutionListener
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.TestSource
@@ -45,14 +46,15 @@ class HasNoUnexpectedErrorsDescriptor(
             println("Check if there are any unexpected errors.")
 
             val unexpectedErrors = outcome.issue
-                .map { it.toData() }
-                .filterNot { it.severity in listOf(Severity.INFORMATION, Severity.WARNING) }
-                .filterNot { testCase.expectedIssues.any { expected -> expected.matches(it) } }
+                .map { Pair(it.toData(), it.sourceUrl()) }
+                .filterNot { it.first.severity in listOf(Severity.INFORMATION, Severity.WARNING) }
+                .filterNot { testCase.expectedIssues.any { expected -> expected.matches(it.first) } }
 
             if (unexpectedErrors.any()) {
                 val failureMessage = StringBuilder().apply {
-                    appendLine("The resource has unexpected errors:")
-                    unexpectedErrors.forEach { appendLine("- $it") }
+                    unexpectedErrors.forEach {
+                        appendLine("Unexpected ${it.first} at ${it.second}")
+                    }
                 }.toString()
 
                 throw AssertionFailedError(failureMessage)
@@ -62,8 +64,11 @@ class HasNoUnexpectedErrorsDescriptor(
         }
 }
 
-private fun OperationOutcome.OperationOutcomeIssueComponent.toData() =
+private fun IssueComponent.toData() =
     Specification.Issue(severity, code, expression.joinToString("|") { it.asStringValue() }, details.text)
+
+private fun IssueComponent.sourceUrl() =
+    getExtensionByUrl(ToolingExtensions.EXT_ISSUE_SOURCE)?.valueStringType?.value
 
 private fun Specification.Issue.matches(other: Specification.Issue): Boolean {
     if (severity != other.severity) return false

@@ -1,10 +1,6 @@
 package no.nav.helse
 
-import org.hl7.fhir.r5.model.OperationOutcome
 import java.nio.file.Path
-
-typealias Severity = OperationOutcome.IssueSeverity
-typealias IssueType = OperationOutcome.IssueType
 
 data class Specification(
     val validator: Validator = Validator(),

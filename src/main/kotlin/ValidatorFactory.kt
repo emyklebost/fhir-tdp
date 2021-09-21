@@ -5,7 +5,6 @@ import org.hl7.fhir.r5.model.StructureDefinition
 import org.hl7.fhir.utilities.TimeTracker
 import org.hl7.fhir.utilities.VersionUtilities.getCurrentVersion
 import org.hl7.fhir.utilities.VersionUtilities.packageForVersion
-import org.hl7.fhir.validation.ValidationEngine
 import org.hl7.fhir.validation.cli.model.CliContext
 import org.hl7.fhir.validation.cli.services.ValidationService
 import org.hl7.fhir.validation.cli.utils.Params
@@ -14,9 +13,9 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.Path
 
 internal object ValidatorFactory {
-    private val cache = ConcurrentHashMap<Specification.Validator, ValidationEngine>()
+    private val cache = ConcurrentHashMap<Specification.Validator, Validator>()
 
-    fun create(config: Specification.Validator, specFilePath: Path): ValidationEngine =
+    fun create(config: Specification.Validator, specFilePath: Path): Validator =
         cache.getOrPut(config) {
             val service = ValidationService()
             val ctx = config.withResolvedIgPaths(specFilePath).toCLIContext()
@@ -25,18 +24,18 @@ internal object ValidatorFactory {
             if (ctx.sv == null) ctx.sv = service.determineVersion(ctx)
 
             val definitions = "${packageForVersion(ctx.sv)}#${getCurrentVersion(ctx.sv)}"
-            val validator = service.initializeValidator(ctx, definitions, TimeTracker())
+            val engine = service.initializeValidator(ctx, definitions, TimeTracker())
 
             ctx.profiles.forEach {
-                if (!validator.context.hasResource(StructureDefinition::class.java, it) &&
-                    !validator.context.hasResource(ImplementationGuide::class.java, it)
+                if (!engine.context.hasResource(StructureDefinition::class.java, it) &&
+                    !engine.context.hasResource(ImplementationGuide::class.java, it)
                 ) {
                     println("  Fetch Profile from $it")
-                    validator.loadProfile(ctx.locations.getOrDefault(it, it))
+                    engine.loadProfile(ctx.locations.getOrDefault(it, it))
                 }
             }
 
-            return validator
+            return Validator(engine)
         }
 }
 
