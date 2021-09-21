@@ -2,6 +2,9 @@ package no.nav.helse
 
 import ca.uhn.fhir.context.FhirContext
 import org.hl7.fhir.instance.model.api.IBaseResource
+import org.hl7.fhir.r5.model.OperationOutcome
+import org.hl7.fhir.r5.model.StringType
+import org.hl7.fhir.r5.utils.ToolingExtensions
 import org.hl7.fhir.validation.ValidationEngine
 import org.junit.platform.engine.EngineExecutionListener
 import org.junit.platform.engine.TestDescriptor
@@ -22,7 +25,7 @@ class TestCaseDescriptor(
             val resourcePath = specFile.resolveAndNormalize(testCase.resource).toString()
             val outcome = validator.validate(resourcePath, listOf(testCase.profile))
 
-            outcome.text = null // <- Removed because this is just noise when displayed in a terminal.
+            prettify(outcome)
             println(outcome.toJson())
 
             children
@@ -39,4 +42,30 @@ private fun IBaseResource.toJson(): String {
         .setPrettyPrint(true)
 
     return parser.encodeResourceToString(this)
+}
+
+private fun prettify(outcome: OperationOutcome): OperationOutcome {
+    outcome.text = null // <- Removed because this is just noise when displayed in a terminal.
+
+    val file = outcome.getExtensionByUrl(ToolingExtensions.EXT_OO_FILE)?.valueStringType?.value
+    if (file != null) {
+        outcome.issue.forEach {
+            val line = it.getExtensionByUrl(ToolingExtensions.EXT_ISSUE_LINE)?.valueIntegerType?.value
+            val column = it.getExtensionByUrl(ToolingExtensions.EXT_ISSUE_COL)?.valueIntegerType?.value
+
+            var fileUrl = file.replace("\\", "/")
+            line?.let { fileUrl += ":$line" }
+            column?.let { fileUrl += ":$column" }
+
+            listOf(
+                ToolingExtensions.EXT_ISSUE_LINE,
+                ToolingExtensions.EXT_ISSUE_COL,
+                ToolingExtensions.EXT_ISSUE_SOURCE
+            ).forEach { extUrl -> it.removeExtension(extUrl) }
+
+            it.addExtension(ToolingExtensions.EXT_ISSUE_SOURCE, StringType(fileUrl))
+        }
+    }
+
+    return outcome
 }
