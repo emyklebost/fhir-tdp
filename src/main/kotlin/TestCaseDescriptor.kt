@@ -28,10 +28,10 @@ class TestCaseDescriptor(
             val resourcePath = specFile.resolveAndNormalize(Path(testCase.resource))
             val outcome = validator.validate(resourcePath, testCase.profile)
 
-            println(outcome.toJson())
-
             val failures =
                 testForUnexpectedErrors(testCase, outcome) + testForMissingExpectedIssues(testCase, outcome)
+
+            println(outcome.toJson())
 
             if (failures.any()) {
                 listener.reportingEntryPublished(this, createReportEntry(testCase, specFile))
@@ -57,7 +57,7 @@ private fun testForUnexpectedErrors(testCase: Specification.TestCase, outcome: O
         .filterNot { testCase.expectedIssues.any { expected -> expected.matches(it.first) } }
         .map { AssertionFailedError("Unexpected ${it.first} at ${it.second}") }
 
-    println("${unexpectedErrorFailures.count()} unexpected error(s)!")
+    println("  ${unexpectedErrorFailures.count()} unexpected error(s)!")
 
     return unexpectedErrorFailures
 }
@@ -70,7 +70,7 @@ private fun testForMissingExpectedIssues(testCase: Specification.TestCase, outco
         .map { AssertionFailedError("Expected issue was not found: $it.") }
 
     val foundCount = testCase.expectedIssues.count() - missingIssueFailures.count()
-    println("Found $foundCount of ${testCase.expectedIssues.count()} expected issue(s)!")
+    println("  Found $foundCount of ${testCase.expectedIssues.count()} expected issue(s)!")
 
     return missingIssueFailures
 }
@@ -93,7 +93,7 @@ private fun createReportEntry(testCase: Specification.TestCase, specFile: Path) 
         val values = mapOf(
             Pair("resource", "${specFile.resolveAndNormalize(Path(resource)).toUri()}"),
             Pair("profile", profile),
-            Pair("expectedIssuesCount", "${expectedIssues.count()}"),
+            Pair("expectedIssuesCount", "${expectedIssues.count()}")
         )
 
         ReportEntry.from(values)
