@@ -20,12 +20,12 @@
       "expectedIssues": [
         {
           "severity": "ERROR",
-          "location": "Bundle.entry[0].resource.ofType(MessageHeader).destination[0].endpoint",
+          "expression": "Bundle.entry[0].resource.ofType(MessageHeader).destination[0].endpoint",
           "message": "valid-her-id"
         },
         {
           "severity": "ERROR",
-          "location": "Bundle.entry[0].resource.ofType(MessageHeader).source.endpoint",
+          "expression": "Bundle.entry[0].resource.ofType(MessageHeader).source.endpoint",
           "message": "message that does not exist"
         }
       ]

@@ -73,7 +73,7 @@ private fun IssueComponent.sourceUrl() =
 private fun Specification.Issue.matches(other: Specification.Issue): Boolean {
     if (severity != other.severity) return false
     if (type != null && type != other.type) return false
-    if (location != null && location != other.location) return false
+    if (expression != null && expression != other.expression) return false
     return (message == null || (other.message?.contains(message, ignoreCase = true) == true))
 }
 
@@ -81,6 +81,6 @@ private fun Specification.Issue.asMap() =
     mapOf(
         Pair("severity", severity.toCode().uppercase()),
         Pair("type", type?.toCode()?.uppercase()),
-        Pair("location", location),
+        Pair("expression", expression),
         Pair("message", message),
     ).filterValues { it != null }

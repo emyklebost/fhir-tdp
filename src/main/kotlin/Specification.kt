@@ -15,7 +15,7 @@ data class Specification(
     data class Issue(
         val severity: Severity,
         val type: IssueType?,
-        val location: String?,
+        val expression: String?,
         val message: String?
     )
 
