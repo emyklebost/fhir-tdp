@@ -34,7 +34,7 @@ class FhirValidatorTestEngine : TestEngine {
             files + getSelectorsByType(FileSelector::class.java).map { it.path }
         }
 
-        return createRootTestDescriptor(uniqueId, specFiles.map { it })
+        return createRootTestDescriptor(uniqueId, specFiles)
     }
 
     override fun execute(request: ExecutionRequest) {
