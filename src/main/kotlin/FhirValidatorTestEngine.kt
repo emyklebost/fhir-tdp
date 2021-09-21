@@ -52,15 +52,15 @@ class FhirValidatorTestEngine : TestEngine {
 private fun createRootTestDescriptor(engineId: UniqueId, specFiles: List<Path>): TestDescriptor {
     val rootTestDesc = EngineDescriptor(engineId, "FHIR Validator")
 
-    specFiles.forEachIndexed { i0, path ->
-        val testSuiteId = engineId.append<TestSuiteDescriptor>("$i0")
+    specFiles.forEachIndexed { tsIndex, path ->
+        val testSuiteId = engineId.append<TestSuiteDescriptor>("$tsIndex")
         val testSuiteDesc = TestSuiteDescriptor(testSuiteId, path.name, FileSource.from(path.toFile()))
 
         val spec = ConfigLoader().loadConfigOrThrow<Specification>(path)
         val validator = ValidatorFactory.create(spec.validator, path)
 
-        spec.testCases.forEachIndexed { i1, testCase ->
-            val testCaseId = testSuiteId.append<TestCaseDescriptor>("$i1")
+        spec.testCases.forEachIndexed { tcIndex, testCase ->
+            val testCaseId = testSuiteId.append<TestCaseDescriptor>("$tcIndex")
             val testCaseDesc = TestCaseDescriptor(testCaseId, testCase, validator, path.fileSource(testCase))
             testSuiteDesc.addChild(testCaseDesc)
         }
