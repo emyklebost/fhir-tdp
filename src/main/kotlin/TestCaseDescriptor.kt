@@ -13,18 +13,19 @@ import org.junit.platform.engine.support.descriptor.FileSource
 import org.opentest4j.AssertionFailedError
 import org.opentest4j.MultipleFailuresError
 import java.nio.file.Path
+import kotlin.io.path.Path
 
 class TestCaseDescriptor(
     id: UniqueId,
     private val testCase: Specification.TestCase,
     private val validator: Validator,
     source: FileSource,
-) : AbstractTestDescriptor(id, testCase.resource.toString(), source) {
+) : AbstractTestDescriptor(id, testCase.resource, source) {
     override fun getType() = TestDescriptor.Type.TEST
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {
             val specFile = (source.get() as FileSource).file.toPath()
-            val resourcePath = specFile.resolveAndNormalize(testCase.resource)
+            val resourcePath = specFile.resolveAndNormalize(Path(testCase.resource))
             val outcome = validator.validate(resourcePath, testCase.profile)
 
             println(outcome.toJson())
@@ -90,7 +91,7 @@ private fun Specification.Issue.matches(other: Specification.Issue): Boolean {
 private fun createReportEntry(testCase: Specification.TestCase, specFile: Path) =
     testCase.run {
         val values = mapOf(
-            Pair("resource", "${specFile.resolveAndNormalize(resource).toUri()}"),
+            Pair("resource", "${specFile.resolveAndNormalize(Path(resource)).toUri()}"),
             Pair("profile", profile),
             Pair("expectedIssuesCount", "${expectedIssues.count()}"),
         )

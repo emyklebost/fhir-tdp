@@ -11,10 +11,12 @@ import org.junit.platform.engine.discovery.DirectorySelector
 import org.junit.platform.engine.discovery.FileSelector
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
+import org.junit.platform.engine.support.descriptor.FilePosition
 import org.junit.platform.engine.support.descriptor.FileSource
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.name
+import kotlin.io.path.readLines
 import kotlin.streams.asSequence
 
 class FhirValidatorTestEngine : TestEngine {
@@ -52,14 +54,14 @@ private fun createRootTestDescriptor(engineId: UniqueId, specFiles: List<Path>):
 
     specFiles.forEachIndexed { i0, path ->
         val testSuiteId = engineId.append<TestSuiteDescriptor>("$i0")
-        val testSuiteDesc = TestSuiteDescriptor(testSuiteId, path.name)
+        val testSuiteDesc = TestSuiteDescriptor(testSuiteId, path.name, FileSource.from(path.toFile()))
 
         val spec = ConfigLoader().loadConfigOrThrow<Specification>(path)
         val validator = ValidatorFactory.create(spec.validator, path)
 
         spec.testCases.forEachIndexed { i1, testCase ->
             val testCaseId = testSuiteId.append<TestCaseDescriptor>("$i1")
-            val testCaseDesc = TestCaseDescriptor(testCaseId, testCase, validator, FileSource.from(path.toFile()))
+            val testCaseDesc = TestCaseDescriptor(testCaseId, testCase, validator, path.fileSource(testCase))
             testSuiteDesc.addChild(testCaseDesc)
         }
 
@@ -69,7 +71,8 @@ private fun createRootTestDescriptor(engineId: UniqueId, specFiles: List<Path>):
     return rootTestDesc
 }
 
-private class TestSuiteDescriptor(id: UniqueId, name: String) : AbstractTestDescriptor(id, name) {
+private class TestSuiteDescriptor(id: UniqueId, name: String, source: FileSource) :
+    AbstractTestDescriptor(id, name, source) {
     override fun getType() = TestDescriptor.Type.CONTAINER
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {
@@ -77,4 +80,17 @@ private class TestSuiteDescriptor(id: UniqueId, name: String) : AbstractTestDesc
                 .mapNotNull { it as? TestCaseDescriptor }
                 .forEach { listener.scope(it) { it.execute(listener) } }
         }
+}
+
+// This can probably be done better using JsonPath or something.
+private fun Path.fileSource(testCase: Specification.TestCase): FileSource {
+    readLines().forEachIndexed { line, str ->
+        var column = str.indexOf(testCase.resource)
+        if (column != -1) {
+            column = str.substring(0, column).lastIndexOf("\"resource\"")
+            return FileSource.from(toFile(), FilePosition.from(line + 1, column + 1))
+        }
+    }
+
+    return FileSource.from(toFile())
 }
