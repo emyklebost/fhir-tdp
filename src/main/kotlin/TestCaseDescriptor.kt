@@ -6,7 +6,6 @@ import org.hl7.fhir.validation.ValidationEngine
 import org.junit.platform.engine.EngineExecutionListener
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.UniqueId
-import org.junit.platform.engine.reporting.ReportEntry
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.support.descriptor.FileSource
 
@@ -19,10 +18,8 @@ class TestCaseDescriptor(
     override fun getType() = TestDescriptor.Type.CONTAINER
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {
-            listener.reportingEntryPublished(this, ReportEntry.from("profile", testCase.profile))
-
             val specFile = (source.get() as FileSource).file.toPath()
-            val resourcePath = specFile.parent.resolve(testCase.resource).toString()
+            val resourcePath = resolvePathRelativeToSpecFile(specFile, testCase.resource).toString()
             val outcome = validator.validate(resourcePath, listOf(testCase.profile))
 
             outcome.text = null // <- Removed because this is just noise when displayed in a terminal.

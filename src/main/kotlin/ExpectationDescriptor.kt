@@ -24,9 +24,8 @@ class HasExpectedIssueDescriptor(
         listener.scope(this) {
             println("Check if validation result contains $issue.")
 
-            listener.reportingEntryPublished(this, ReportEntry.from(issue.asMap()))
-
             if (outcome.issue.map { it.toData() }.none { issue.matches(it) }) {
+                listener.reportingEntryPublished(this, ReportEntry.from(issue.asMap()))
                 throw AssertionError("Expected issue was not found: $issue.")
             }
             println("Expected issue was found!")

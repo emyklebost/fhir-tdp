@@ -9,15 +9,17 @@ import org.hl7.fhir.validation.ValidationEngine
 import org.hl7.fhir.validation.cli.model.CliContext
 import org.hl7.fhir.validation.cli.services.ValidationService
 import org.hl7.fhir.validation.cli.utils.Params
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.Path
 
 internal object ValidatorFactory {
     private val cache = ConcurrentHashMap<Specification.Validator, ValidationEngine>()
 
-    fun create(config: Specification.Validator): ValidationEngine =
+    fun create(config: Specification.Validator, specFilePath: Path): ValidationEngine =
         cache.getOrPut(config) {
             val service = ValidationService()
-            val ctx = config.toCLIContext()
+            val ctx = config.withResolvedIgPaths(specFilePath).toCLIContext()
 
             // Must use good-old if-check because for some reason the Elvis operator doesn't work here.
             if (ctx.sv == null) ctx.sv = service.determineVersion(ctx)
@@ -48,4 +50,18 @@ private fun Specification.Validator.toCLIContext(): CliContext {
     terminologyServiceLog?.let { args.addAll(listOf(Params.TERMINOLOGY_LOG, it)) }
 
     return Params.loadCliContext(args.toTypedArray())
+}
+
+// An IG can be specified as either package, file, folder or url.
+// In case of file or folder we want the path to be resolved relative to the specification file.
+private fun Specification.Validator.withResolvedIgPaths(specFilePath: Path): Specification.Validator {
+    val resolvedIgs = igs.map {
+        try {
+            resolvePathRelativeToSpecFile(specFilePath, Path(it)).toString()
+        } catch (ex: Throwable) {
+            it
+        }
+    }
+
+    return copy(igs = resolvedIgs)
 }

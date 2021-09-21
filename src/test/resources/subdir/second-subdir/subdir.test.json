@@ -2,16 +2,16 @@
   "validator": {
     "version": "4.0",
     "igs": [
-      "src/test/resources/fhir"
+      "../../fhir-profiles"
     ]
   },
   "testCases": [
     {
-      "resource": "valid/message-with-valid-her-id.json",
+      "resource": "../../fhir-instances/message-with-valid-her-id.json",
       "profile": "http://fhir.nav.no/StructureDefinition/HopsMessage"
     },
     {
-      "resource": "invalid/message-with-invalid-her-id.json",
+      "resource": "../../fhir-instances/message-with-invalid-her-id.json",
       "profile": "http://fhir.nav.no/StructureDefinition/HopsMessage",
       "expectedIssues": [
         {

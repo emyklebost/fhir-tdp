@@ -50,7 +50,7 @@ private fun createRootTestDescriptor(engineId: UniqueId, specFiles: List<Path>):
         val testSuiteDesc = TestSuiteDescriptor(testSuiteId, path.name)
 
         val spec = ConfigLoader().loadConfigOrThrow<Specification>(path)
-        val validator = ValidatorFactory.create(spec.validator)
+        val validator = ValidatorFactory.create(spec.validator, path)
 
         spec.testCases.forEachIndexed { i1, testCase ->
             val testCaseId = testSuiteId.append<TestCaseDescriptor>("$i1")
