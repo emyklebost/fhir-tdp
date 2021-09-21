@@ -60,15 +60,6 @@ private fun createRootTestDescriptor(engineId: UniqueId, specFiles: List<Path>):
         spec.testCases.forEachIndexed { i1, testCase ->
             val testCaseId = testSuiteId.append<TestCaseDescriptor>("$i1")
             val testCaseDesc = TestCaseDescriptor(testCaseId, testCase, validator, FileSource.from(path.toFile()))
-
-            val noUnexpectedErrorsId = testCaseId.append<HasNoUnexpectedErrorsDescriptor>("0")
-            testCaseDesc.addChild(HasNoUnexpectedErrorsDescriptor(noUnexpectedErrorsId, testCase))
-
-            testCase.expectedIssues.forEachIndexed { i2, issue ->
-                val expectedIssueId = testCaseId.append<HasExpectedIssueDescriptor>("$i2")
-                testCaseDesc.addChild(HasExpectedIssueDescriptor(expectedIssueId, issue))
-            }
-
             testSuiteDesc.addChild(testCaseDesc)
         }
 

@@ -6,6 +6,7 @@ import org.hl7.fhir.r5.utils.ToolingExtensions
 import org.hl7.fhir.validation.ValidationEngine
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.Path
 
 class Validator(private val validationEngine: ValidationEngine) {
     private val cache = ConcurrentHashMap<Pair<Path, String>, OperationOutcome>()
@@ -26,7 +27,8 @@ private fun prettify(outcome: OperationOutcome): OperationOutcome {
             val line = it.getExtensionByUrl(ToolingExtensions.EXT_ISSUE_LINE)?.valueIntegerType?.value
             val column = it.getExtensionByUrl(ToolingExtensions.EXT_ISSUE_COL)?.valueIntegerType?.value
 
-            var fileUrl = file.replace("\\", "/")
+            // This format seems to be resolvable (clickable) within the vscode console.
+            var fileUrl = Path(file).toUri().toString().removePrefix("file:///")
             line?.let { fileUrl += ":$line" }
             column?.let { fileUrl += ":$column" }
 

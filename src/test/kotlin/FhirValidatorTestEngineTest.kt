@@ -12,7 +12,7 @@ class FhirValidatorTestEngineTest {
             .execute()
             .testEvents()
             .assertStatistics {
-                it.started(5).succeeded(3).failed(2)
+                it.started(6).succeeded(4).failed(2)
             }
     }
 }
