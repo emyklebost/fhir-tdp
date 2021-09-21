@@ -29,8 +29,8 @@ internal object ValidatorFactory {
 
             ctx.profiles.forEach {
                 if (!validator.context.hasResource(StructureDefinition::class.java, it) &&
-                    !validator.context.hasResource(ImplementationGuide::class.java, it))
-                {
+                    !validator.context.hasResource(ImplementationGuide::class.java, it)
+                ) {
                     println("  Fetch Profile from $it")
                     validator.loadProfile(ctx.locations.getOrDefault(it, it))
                 }

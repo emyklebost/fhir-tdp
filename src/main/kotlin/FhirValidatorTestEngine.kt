@@ -1,7 +1,12 @@
 package no.nav.helse
 
 import com.sksamuel.hoplite.ConfigLoader
-import org.junit.platform.engine.*
+import org.junit.platform.engine.EngineDiscoveryRequest
+import org.junit.platform.engine.EngineExecutionListener
+import org.junit.platform.engine.ExecutionRequest
+import org.junit.platform.engine.TestDescriptor
+import org.junit.platform.engine.TestEngine
+import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.discovery.DirectorySelector
 import org.junit.platform.engine.discovery.FileSelector
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor

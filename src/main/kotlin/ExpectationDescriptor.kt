@@ -1,10 +1,13 @@
 package no.nav.helse
 
 import org.hl7.fhir.r5.model.OperationOutcome
-import org.opentest4j.AssertionFailedError
-import org.junit.platform.engine.*
+import org.junit.platform.engine.EngineExecutionListener
+import org.junit.platform.engine.TestDescriptor
+import org.junit.platform.engine.TestSource
+import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.reporting.ReportEntry
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
+import org.opentest4j.AssertionFailedError
 
 abstract class ExpectationDescriptor(
     id: UniqueId,

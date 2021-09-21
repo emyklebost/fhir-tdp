@@ -11,8 +11,7 @@ inline fun EngineExecutionListener.scope(testDescriptor: TestDescriptor, execute
         executionStarted(testDescriptor)
         execute()
         executionFinished(testDescriptor, TestExecutionResult.successful())
-    }
-    catch (error: Throwable) {
+    } catch (error: Throwable) {
         executionFinished(testDescriptor, TestExecutionResult.failed(error))
     }
 }

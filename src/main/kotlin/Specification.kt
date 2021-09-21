@@ -8,7 +8,8 @@ typealias IssueType = OperationOutcome.IssueType
 
 data class Specification(
     val validator: Validator = Validator(),
-    val testCases: List<TestCase> = emptyList()) {
+    val testCases: List<TestCase> = emptyList()
+) {
     data class TestCase(
         val resource: Path,
         val profile: String,
