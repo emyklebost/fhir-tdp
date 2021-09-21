@@ -57,7 +57,7 @@ private fun Specification.Validator.toCLIContext(): CliContext {
 private fun Specification.Validator.withResolvedIgPaths(specFilePath: Path): Specification.Validator {
     val resolvedIgs = igs.map {
         try {
-            resolvePathRelativeToSpecFile(specFilePath, Path(it)).toString()
+            specFilePath.resolveAndNormalize(Path(it)).toString()
         } catch (ex: Throwable) {
             it
         }

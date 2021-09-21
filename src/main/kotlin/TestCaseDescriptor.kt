@@ -19,7 +19,7 @@ class TestCaseDescriptor(
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {
             val specFile = (source.get() as FileSource).file.toPath()
-            val resourcePath = resolvePathRelativeToSpecFile(specFile, testCase.resource).toString()
+            val resourcePath = specFile.resolveAndNormalize(testCase.resource).toString()
             val outcome = validator.validate(resourcePath, listOf(testCase.profile))
 
             outcome.text = null // <- Removed because this is just noise when displayed in a terminal.
