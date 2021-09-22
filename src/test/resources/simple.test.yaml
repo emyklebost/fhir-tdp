@@ -5,3 +5,6 @@ validator:
 tests:
   - name: "Message must conform to base profile"
     source: "fhir-instances/message-without-errors.json"
+    tags:
+      - "my-tag1"
+      - "my-tag2"

@@ -8,10 +8,7 @@
     "$schema": true,
     "name": {
       "description": "[Optional] Human readable name of the Test Suite, the default is to use the filename.",
-      "type": "string",
-      "examples": [
-        "National Implementation Guide test cases"
-      ]
+      "type": "string"
     },
     "validator": {
       "type": "object",
@@ -23,7 +20,6 @@
           "description": "[Optional] The FHIR version to use, the default is to use 'current' which is R5",
           "default": "current",
           "examples": [
-            "3.0",
             "4.0",
             "4.0.1"
           ]
@@ -33,15 +29,16 @@
           "description": "[Optional] The (base) url of a FHIR terminology service. To run without terminology value, specific n/a as the URL",
           "default": "http://tx.fhir.org",
           "examples": [
-            "http://tx.fhir.org",
-            "n/a"
+            "n/a",
+            "http://tx.fhir.org"
           ]
         },
         "terminologyServiceLog": {
           "type": "string",
           "description": "[Optional] Produce a log of the terminology server operations in file. Default value is not to produce a log.",
           "examples": [
-            "txLog.txt"
+            "txLog.txt",
+            "logs/tx.txt"
           ]
         },
         "snomedCtEdition": {
@@ -50,7 +47,13 @@
           "examples": [
             "intl",
             "us",
-            "uk"
+            "uk",
+            "au",
+            "nl",
+            "ca",
+            "se",
+            "dk",
+            "es"
           ]
         },
         "igs": {
@@ -60,10 +63,7 @@
           "items": {
             "type": "string",
             "examples": [
-              "fsh-generated/resources",
-              "../../my-fhir-profiles",
-              "hl7.fhir.us.davinci-cdex-0.2.0",
-              "https://build.fhir.org/ig/HL7/fhir-ips/package.tgz"
+              "../fsh-generated/resources"
             ]
           }
         }
@@ -83,28 +83,28 @@
         "properties": {
           "source": {
             "description": "[Required] Relative path to the FHIR resource file (xml or json) to validate.",
-            "type": "string",
-            "examples": [
-              "my-test-patient.json",
-              "resources/valid-practitioner.json",
-              "../../examples/Task1.xml"
-            ]
+            "type": "string"
           },
           "name": {
             "description": "[Optional] Human readable name of the Test Case, the default is the 'source' value.",
-            "type": "string",
-            "examples": [
-              "Patient without valid SSN should result in ERROR."
-            ]
+            "type": "string"
           },
           "profile": {
             "description": "[Optional] Canonical URL of the Profile the resources should conform to. If this is left empty the value of Resource.meta.profile will be used, if this also is empty the base profile is used.",
             "type": "string",
-            "format": "uri",
-            "examples": [
-              "http://hl7.org/fhir/StructureDefinition/lipidprofile",
-              "http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/notifications-messageheader"
-            ]
+            "format": "uri"
+          },
+          "tags": {
+            "description": "[Optional] Tags can be used to mark and filter tests, must conform to the specified syntax rules: https://junit.org/junit5/docs/current/user-guide/#running-tests-tags",
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[^,()&|! ]{1,}$",
+              "examples": [
+                "sut"
+              ]
+            }
           },
           "expectedIssues": {
             "type": "array",
@@ -126,17 +126,11 @@
                 },
                 "expression": {
                   "description": "[Optional] FHIRPath to the element within the FHIR resource expected to containing the error.",
-                  "type": "string",
-                  "examples": [
-                    "Bundle.entry[0].resource.ofType(MessageHeader).source.endpoint"
-                  ]
+                  "type": "string"
                 },
                 "message": {
                   "description": "[Optional] The expected validation error message. Match is partial and case insensitive.",
-                  "type": "string",
-                  "examples": [
-                    "element does not match any known slice"
-                  ]
+                  "type": "string"
                 }
               }
             }
@@ -145,7 +139,7 @@
       }
     }
   },
-  "$defs": {
+  "$defs": {    
     "severity": {
       "description": "[Required] The expected severity of the issue, see: https://www.hl7.org/fhir/valueset-issue-severity.html",
       "enum": [

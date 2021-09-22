@@ -6,6 +6,7 @@ import org.hl7.fhir.r5.model.OperationOutcome
 import org.hl7.fhir.r5.utils.ToolingExtensions
 import org.junit.platform.engine.EngineExecutionListener
 import org.junit.platform.engine.TestDescriptor
+import org.junit.platform.engine.TestTag
 import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.reporting.ReportEntry
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
@@ -22,6 +23,7 @@ class TestCaseDescriptor(
     source: FileSource,
 ) : AbstractTestDescriptor(id, testCase.name ?: testCase.source, source) {
     override fun getType() = TestDescriptor.Type.TEST
+    override fun getTags() = testCase.tags.map(TestTag::create).toSet()
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {
             val specFile = (source.get() as FileSource).file.toPath()

@@ -9,7 +9,8 @@ data class Specification(
         val source: String,
         val name: String?,
         val profile: String?,
-        val expectedIssues: List<Issue> = emptyList()
+        val expectedIssues: List<Issue> = emptyList(),
+        val tags: List<String> = emptyList()
     )
 
     data class Issue(
