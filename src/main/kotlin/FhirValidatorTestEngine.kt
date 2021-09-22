@@ -2,7 +2,6 @@ package no.nav.helse
 
 import com.sksamuel.hoplite.ConfigLoader
 import com.sksamuel.hoplite.json.JsonParser
-import com.sksamuel.hoplite.parsers.PropsParser
 import com.sksamuel.hoplite.yaml.YamlParser
 import org.junit.platform.engine.EngineDiscoveryRequest
 import org.junit.platform.engine.EngineExecutionListener
@@ -14,12 +13,10 @@ import org.junit.platform.engine.discovery.DirectorySelector
 import org.junit.platform.engine.discovery.FileSelector
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
-import org.junit.platform.engine.support.descriptor.FilePosition
 import org.junit.platform.engine.support.descriptor.FileSource
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.name
-import kotlin.io.path.readLines
 import kotlin.streams.asSequence
 
 class FhirValidatorTestEngine : TestEngine {
@@ -27,7 +24,7 @@ class FhirValidatorTestEngine : TestEngine {
 
     override fun discover(discoveryRequest: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor {
         val specFiles = discoveryRequest.run {
-            val fileExt = listOf("test.json", "test.yml", "test.yaml", "test.properties")
+            val fileExt = listOf("test.json", "test.yml", "test.yaml")
 
             val files = getSelectorsByType(DirectorySelector::class.java)
                 .map { it.path }
@@ -64,7 +61,7 @@ private fun createRootTestDescriptor(engineId: UniqueId, specFiles: List<Path>):
 
         spec.tests.forEachIndexed { tcIndex, testCase ->
             val testCaseId = testSuiteId.append<TestCaseDescriptor>("$tcIndex")
-            val testCaseDesc = TestCaseDescriptor(testCaseId, testCase, validator, path.fileSource(testCase))
+            val testCaseDesc = TestCaseDescriptor(testCaseId, testCase, validator, path.fileSource(tcIndex))
             testSuiteDesc.addChild(testCaseDesc)
         }
 
@@ -85,25 +82,8 @@ private class TestSuiteDescriptor(id: UniqueId, name: String, source: FileSource
         }
 }
 
-private fun Path.fileSource(testCase: Specification.TestCase): FileSource {
-    if (name.endsWith(".json")) { // Only works with json files for now.
-        // This can probably be done better using JsonPath or something.
-        readLines().forEachIndexed { line, str ->
-            var column = str.indexOf(testCase.source)
-            if (column != -1) {
-                // BUG: If multiple tests uses the same source they will all get FilePosition of the first.
-                column = str.substring(0, column).lastIndexOf("\"${Specification.TestCase::source.name}\"")
-                return FileSource.from(toFile(), FilePosition.from(line + 1, column + 1))
-            }
-        }
-    }
-
-    return FileSource.from(toFile())
-}
-
 /** Parsers needs to be explicitly mapped to file-extensions to work with ShadowJar. */
-private val configLoader = ConfigLoader.Builder()
-    .addFileExtensionMapping("properties", PropsParser())
+val configLoader = ConfigLoader.Builder()
     .addFileExtensionMapping("json", JsonParser())
     .addFileExtensionMapping("yaml", YamlParser())
     .addFileExtensionMapping("yml", YamlParser())
