@@ -85,10 +85,9 @@ private class TestSuiteDescriptor(id: UniqueId, name: String, source: FileSource
         }
 }
 
-// This can probably be done better using JsonPath or something.
-// Only works with json files.
 private fun Path.fileSource(testCase: Specification.TestCase): FileSource {
-    if (name.endsWith(".json")) {
+    if (name.endsWith(".json")) { // Only works with json files for now.
+        // This can probably be done better using JsonPath or something.
         readLines().forEachIndexed { line, str ->
             var column = str.indexOf(testCase.source)
             if (column != -1) {

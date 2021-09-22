@@ -11,11 +11,11 @@ import kotlin.io.path.Path
 class Validator(private val validationEngine: ValidationEngine) {
     private val cache = ConcurrentHashMap<Pair<Path, String?>, OperationOutcome>()
 
-    fun validate(source: Path, profile: String?) =
+    fun validate(source: Path, profile: String?): OperationOutcome =
         cache.getOrPut(Pair(source, profile)) {
             val outcome = validationEngine.validate(source.toString(), listOf(profile).mapNotNull { it })
             prettify(outcome)
-        }!!
+        }
 }
 
 private fun prettify(outcome: OperationOutcome): OperationOutcome {
@@ -27,10 +27,11 @@ private fun prettify(outcome: OperationOutcome): OperationOutcome {
             val line = it.getExtensionByUrl(ToolingExtensions.EXT_ISSUE_LINE)?.valueIntegerType?.value
             val column = it.getExtensionByUrl(ToolingExtensions.EXT_ISSUE_COL)?.valueIntegerType?.value
 
-            // This format seems to be resolvable (clickable) within the vscode console.
-            var fileUrl = Path(file).toUri().toString().removePrefix("file:///")
-            line?.let { fileUrl += ":$line" }
-            column?.let { fileUrl += ":$column" }
+            var fileUrl = Path(file).toUri().toString()
+            line?.let {
+                fileUrl += ":$line"
+                column?.let { fileUrl += ":$column" }
+            }
 
             listOf(
                 ToolingExtensions.EXT_ISSUE_LINE,
