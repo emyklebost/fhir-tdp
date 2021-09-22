@@ -6,7 +6,13 @@
       {
         "label": "Run JUnit5 console standalone",
         "type": "shell",
-        "command": "java -jar junit-standalone.jar -cp engine.jar -d src/test/resources --reports-dir test-reports",
+        "command": "java",
+        "args": [
+          "-jar", "junit-standalone.jar",
+          "-cp", "engine.jar",
+          "-d", "src/test/resources",
+          "--reports-dir", "test-reports"
+      ],
         "group":{
             "kind": "test",
             "isDefault": true

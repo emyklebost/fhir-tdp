@@ -1,0 +1,21 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch JUnit console standalone",
+            "request": "launch",
+            "mainClass": "org.junit.platform.console.ConsoleLauncher",
+            "classPaths": ["engine.jar", "junit-standalone.jar"],
+            "cwd": "${workspaceFolder}",
+            "sourcePaths": ["src"],
+            "args": [
+                "-d", "src/test/resources",
+                "--reports-dir", "test-reports"
+            ],
+        }
+    ]
+}

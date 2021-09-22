@@ -10,7 +10,7 @@
             "sourcePaths": ["src"],
             "args": [
                 "-d", "src/test/resources",
-                "--reports-dir test-reports"
+                "--reports-dir", "test-reports"
             ],
         }
     ]
