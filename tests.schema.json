@@ -6,6 +6,13 @@
   "additionalProperties": false,
   "properties": {
     "$schema": true,
+    "name": {
+      "description": "[Optional] Human readable name of the Test Suite, the default is to use the filename.",
+      "type": "string",
+      "examples": [
+        "National Implementation Guide test cases"
+      ]
+    },
     "validator": {
       "type": "object",
       "description": "[Optional] The arguments to use in the FHIR Validator, see: https://confluence.hl7.org/display/FHIR/Using+the+FHIR+Validator#UsingtheFHIRValidator-Runningthevalidator and https://raw.githubusercontent.com/hapifhir/org.hl7.fhir.core/master/org.hl7.fhir.validation/src/main/resources/help.txt",
@@ -75,12 +82,19 @@
         ],
         "properties": {
           "source": {
-            "description": "[Required] Relative path to the FHIR resource file (xml or json) to validate",
+            "description": "[Required] Relative path to the FHIR resource file (xml or json) to validate.",
             "type": "string",
             "examples": [
               "my-test-patient.json",
               "resources/valid-practitioner.json",
               "../../examples/Task1.xml"
+            ]
+          },
+          "name": {
+            "description": "[Optional] Human readable name of the Test Case, the default is the 'source' value.",
+            "type": "string",
+            "examples": [
+              "Patient without valid SSN should result in ERROR."
             ]
           },
           "profile": {

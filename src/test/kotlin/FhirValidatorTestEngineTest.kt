@@ -6,7 +6,7 @@ import org.junit.platform.testkit.engine.EngineTestKit
 
 class FhirValidatorTestEngineTest {
     @Test
-    fun `Given a valid Test file in a sub-dir, tests should be discovered and executed`() {
+    fun `Given a directory with a json test file, tests should be discovered and executed`() {
         EngineTestKit
             .engine(FhirValidatorTestEngine())
             .selectors(selectDirectory("src/test/resources/subdir"))

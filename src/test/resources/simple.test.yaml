@@ -1,5 +1,7 @@
 ---
+name: "My Test Suite name"
 validator:
   version: '4.0'
 tests:
-  - source: "fhir-instances/message-without-errors.json"
+  - name: "Message must conform to base profile"
+    source: "fhir-instances/message-without-errors.json"

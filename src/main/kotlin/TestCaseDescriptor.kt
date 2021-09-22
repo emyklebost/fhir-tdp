@@ -20,7 +20,7 @@ class TestCaseDescriptor(
     private val testCase: Specification.TestCase,
     private val validator: Validator,
     source: FileSource,
-) : AbstractTestDescriptor(id, testCase.source, source) {
+) : AbstractTestDescriptor(id, testCase.name ?: testCase.source, source) {
     override fun getType() = TestDescriptor.Type.TEST
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {

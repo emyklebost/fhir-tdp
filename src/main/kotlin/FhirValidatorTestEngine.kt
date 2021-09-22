@@ -1,6 +1,9 @@
 package no.nav.helse
 
 import com.sksamuel.hoplite.ConfigLoader
+import com.sksamuel.hoplite.json.JsonParser
+import com.sksamuel.hoplite.parsers.PropsParser
+import com.sksamuel.hoplite.yaml.YamlParser
 import org.junit.platform.engine.EngineDiscoveryRequest
 import org.junit.platform.engine.EngineExecutionListener
 import org.junit.platform.engine.ExecutionRequest
@@ -53,11 +56,11 @@ private fun createRootTestDescriptor(engineId: UniqueId, specFiles: List<Path>):
     val rootTestDesc = EngineDescriptor(engineId, "FHIR Validator")
 
     specFiles.forEachIndexed { tsIndex, path ->
-        val testSuiteId = engineId.append<TestSuiteDescriptor>("$tsIndex")
-        val testSuiteDesc = TestSuiteDescriptor(testSuiteId, path.name, FileSource.from(path.toFile()))
-
-        val spec = ConfigLoader().loadConfigOrThrow<Specification>(path)
+        val spec = configLoader.loadConfigOrThrow<Specification>(path)
         val validator = ValidatorFactory.create(spec.validator, path)
+
+        val testSuiteId = engineId.append<TestSuiteDescriptor>("$tsIndex")
+        val testSuiteDesc = TestSuiteDescriptor(testSuiteId, spec.name ?: path.name, FileSource.from(path.toFile()))
 
         spec.tests.forEachIndexed { tcIndex, testCase ->
             val testCaseId = testSuiteId.append<TestCaseDescriptor>("$tcIndex")
@@ -98,3 +101,11 @@ private fun Path.fileSource(testCase: Specification.TestCase): FileSource {
 
     return FileSource.from(toFile())
 }
+
+/** Parsers needs to be explicitly mapped to file-extensions to work with ShadowJar. */
+private val configLoader = ConfigLoader.Builder()
+    .addFileExtensionMapping("properties", PropsParser())
+    .addFileExtensionMapping("json", JsonParser())
+    .addFileExtensionMapping("yaml", YamlParser())
+    .addFileExtensionMapping("yml", YamlParser())
+    .build()

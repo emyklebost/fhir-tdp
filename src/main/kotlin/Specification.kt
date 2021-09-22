@@ -1,11 +1,13 @@
 package no.nav.helse
 
 data class Specification(
+    val name: String?,
     val validator: Validator = Validator(),
     val tests: List<TestCase> = emptyList()
 ) {
     data class TestCase(
         val source: String,
+        val name: String?,
         val profile: String?,
         val expectedIssues: List<Issue> = emptyList()
     )
