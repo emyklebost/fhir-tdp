@@ -7,6 +7,7 @@
         {
             "name": "myConfiguration",
             "workingDirectory": "${workspaceFolder}",
+            "sourcePaths": ["src"],
             "args": [
                 "-d", "src/test/resources",
                 "--reports-dir test-reports"
