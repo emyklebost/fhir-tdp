@@ -9,9 +9,7 @@
             "name": "Launch JUnit console standalone",
             "request": "launch",
             "mainClass": "org.junit.platform.console.ConsoleLauncher",
-            "classPaths": ["engine.jar", "junit-standalone.jar"],
-            "cwd": "${workspaceFolder}",
-            "sourcePaths": ["src"],
+            "classPaths": ["${workspaceFolder}/engine.jar", "${workspaceFolder}/junit-standalone.jar"],
             "args": [
                 "-d", "src/test/resources",
                 "--reports-dir", "test-reports"
