@@ -37,10 +37,7 @@ fun Path.resolveAndNormalize(path: Path): Path {
 /** Creates a FileSource with FilePosition (line, column) of the 'source' property
  ** of the Test with the specified index. Works with both json and yaml files. */
 fun Path.fileSource(testIndex: Int): FileSource {
-    val pattern =
-        if (name.endsWith(".json", true)) "\"${Specification.TestCase::source.name}\""
-        else "[ {]${Specification.TestCase::source.name}: " // YAML syntax
-
+    val pattern = if (name.endsWith(".json")) "\"source\"" else "[ {]source: "
     val filePosition = matches(Regex(pattern)).elementAtOrNull(testIndex)
     return FileSource.from(toFile(), filePosition)
 }
