@@ -38,11 +38,11 @@ fun Path.resolveAndNormalize(path: Path): Path {
  ** of the Test with the specified index. Works with both json and yaml files. */
 fun Path.fileSource(testIndex: Int): FileSource {
     val pattern = if (name.endsWith(".json")) "\"source\"" else "[ {]source: "
-    val filePosition = matches(Regex(pattern)).elementAtOrNull(testIndex)
+    val filePosition = findAllMatches(Regex(pattern)).elementAtOrNull(testIndex)
     return FileSource.from(toFile(), filePosition)
 }
 
-private fun Path.matches(pattern: Regex) =
+private fun Path.findAllMatches(pattern: Regex) =
     sequence<FilePosition> {
         var lineNr = 1
         forEachLine { line ->
