@@ -83,13 +83,16 @@ private class TestSuiteDescriptor(id: UniqueId, name: String, source: FileSource
 }
 
 // This can probably be done better using JsonPath or something.
-// BUG: If multiple TestCases uses the same resource they will all get FilePosition of the first.
+// Only works with json files.
 private fun Path.fileSource(testCase: Specification.TestCase): FileSource {
-    readLines().forEachIndexed { line, str ->
-        var column = str.indexOf(testCase.source)
-        if (column != -1) {
-            column = str.substring(0, column).lastIndexOf("\"${Specification.TestCase::source.name}\"")
-            return FileSource.from(toFile(), FilePosition.from(line + 1, column + 1))
+    if (name.endsWith(".json")) {
+        readLines().forEachIndexed { line, str ->
+            var column = str.indexOf(testCase.source)
+            if (column != -1) {
+                // BUG: If multiple tests uses the same source they will all get FilePosition of the first.
+                column = str.substring(0, column).lastIndexOf("\"${Specification.TestCase::source.name}\"")
+                return FileSource.from(toFile(), FilePosition.from(line + 1, column + 1))
+            }
         }
     }
 
