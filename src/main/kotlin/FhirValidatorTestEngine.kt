@@ -85,7 +85,7 @@ private class TestSuiteDescriptor(id: UniqueId, name: String, source: FileSource
 }
 
 /** Parsers needs to be explicitly mapped to file-extensions to work with ShadowJar. */
-val configLoader = ConfigLoader.Builder()
+private val configLoader = ConfigLoader.Builder()
     .addFileExtensionMapping("json", JsonParser())
     .addFileExtensionMapping("yaml", YamlParser())
     .addFileExtensionMapping("yml", YamlParser())
