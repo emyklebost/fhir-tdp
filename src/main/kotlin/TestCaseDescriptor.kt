@@ -20,16 +20,15 @@ class TestCaseDescriptor(
     private val testCase: Specification.TestCase,
     private val validator: Validator,
     source: FileSource,
-) : AbstractTestDescriptor(id, testCase.resource, source) {
+) : AbstractTestDescriptor(id, testCase.source, source) {
     override fun getType() = TestDescriptor.Type.TEST
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {
             val specFile = (source.get() as FileSource).file.toPath()
-            val resourcePath = specFile.resolveAndNormalize(Path(testCase.resource))
+            val resourcePath = specFile.resolveAndNormalize(Path(testCase.source))
             val outcome = validator.validate(resourcePath, testCase.profile)
 
-            val failures =
-                testForUnexpectedErrors(testCase, outcome) + testForMissingExpectedIssues(testCase, outcome)
+            val failures = testForUnexpectedErrors(testCase, outcome) + testForMissingExpectedIssues(testCase, outcome)
 
             println(outcome.toJson())
 
@@ -91,9 +90,9 @@ private fun Specification.Issue.matches(other: Specification.Issue): Boolean {
 private fun createReportEntry(testCase: Specification.TestCase, specFile: Path) =
     testCase.run {
         val values = mapOf(
-            Pair("resource", "${specFile.resolveAndNormalize(Path(resource)).toUri()}"),
-            Pair("profile", profile),
-            Pair("expectedIssuesCount", "${expectedIssues.count()}")
+            Pair(Specification.TestCase::source.name, "${specFile.resolveAndNormalize(Path(source)).toUri()}"),
+            Pair(Specification.TestCase::profile.name, profile),
+            Pair("${Specification.TestCase::expectedIssues.name}Count", "${expectedIssues.count()}")
         )
 
         ReportEntry.from(values)

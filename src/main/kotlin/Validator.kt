@@ -9,11 +9,11 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.Path
 
 class Validator(private val validationEngine: ValidationEngine) {
-    private val cache = ConcurrentHashMap<Pair<Path, String>, OperationOutcome>()
+    private val cache = ConcurrentHashMap<Pair<Path, String?>, OperationOutcome>()
 
-    fun validate(resource: Path, profile: String) =
-        cache.getOrPut(Pair(resource, profile)) {
-            val outcome = validationEngine.validate(resource.toString(), listOf(profile))
+    fun validate(source: Path, profile: String?) =
+        cache.getOrPut(Pair(source, profile)) {
+            val outcome = validationEngine.validate(source.toString(), listOf(profile).mapNotNull { it })
             prettify(outcome)
         }!!
 }

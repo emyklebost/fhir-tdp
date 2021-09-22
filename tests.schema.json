@@ -1,114 +1,181 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema",
-    "title": "Tests",
-    "description": "Test Cases",
-    "type": "object",
-    "additionalProperties": false,
-    "properties": {
-      "$schema": true,
-      "testCases": {
-        "type": "array",
-        "description": "List of test cases describing a FHIR resource to validate against a profile and the expected outcome.",
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "Tests",
+  "description": "Test Cases",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": true,
+    "validator": {
+      "type": "object",
+      "description": "[Optional] The arguments to use in the FHIR Validator, see: https://confluence.hl7.org/display/FHIR/Using+the+FHIR+Validator#UsingtheFHIRValidator-Runningthevalidator and https://raw.githubusercontent.com/hapifhir/org.hl7.fhir.core/master/org.hl7.fhir.validation/src/main/resources/help.txt",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "[Optional] The FHIR version to use, the default is to use 'current' which is R5",
+          "default": "current",
+          "examples": [
+            "3.0",
+            "4.0",
+            "4.0.1"
+          ]
+        },
+        "terminologyService": {
+          "type": "string",
+          "description": "[Optional] The (base) url of a FHIR terminology service. To run without terminology value, specific n/a as the URL",
+          "default": "http://tx.fhir.org",
+          "examples": [
+            "http://tx.fhir.org",
+            "n/a"
+          ]
+        },
+        "terminologyServiceLog": {
+          "type": "string",
+          "description": "[Optional] Produce a log of the terminology server operations in file. Default value is not to produce a log.",
+          "examples": [
+            "txLog.txt"
+          ]
+        },
+        "snomedCtEdition": {
+          "type": "string",
+          "description": "[Optional] Edition of SNOMED CT to use.",
+          "examples": [
+            "intl",
+            "us",
+            "uk"
+          ]
+        },
+        "igs": {
+          "type": "array",
+          "description": "[Optional] IGs or profile definitions to load. Can be file, folder, URL or package ([id]-[ver]) of an implementation guide. The base profiles will always be loaded.",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "examples": [
+              "fsh-generated/resources",
+              "../../my-fhir-profiles",
+              "hl7.fhir.us.davinci-cdex-0.2.0",
+              "https://build.fhir.org/ig/HL7/fhir-ips/package.tgz"
+            ]
+          }
+        }
+      }
+    },
+    "tests": {
+      "type": "array",
+      "description": "List of test cases describing a FHIR resource to validate against a profile and the expected outcome.",
+      "additionalProperties": false,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
         "additionalProperties": false,
-        "uniqueItems": true,
-        "items": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "resource",
-            "profile"
-          ],
-          "properties": {
-            "resource": {
-              "description": "Relative path to the resource (json) to validate.",
-              "type": "string",
-              "pattern": "(.*?).json$"
-            },
-            "profile": {
-              "description": "Canonical URL of the Profile to validate against.",
-              "type": "string",
-              "format": "uri"
-            },
-            "expectedIssues": {
-              "type": "array",
-              "description": "List of issues expected in the validation outcome.",
+        "required": [
+          "source"
+        ],
+        "properties": {
+          "source": {
+            "description": "[Required] Relative path to the FHIR resource file (xml or json) to validate",
+            "type": "string",
+            "examples": [
+              "my-test-patient.json",
+              "resources/valid-practitioner.json",
+              "../../examples/Task1.xml"
+            ]
+          },
+          "profile": {
+            "description": "[Optional] Canonical URL of the Profile the resources should conform to. If this is left empty the value of Resource.meta.profile will be used, if this also is empty the base profile is used.",
+            "type": "string",
+            "format": "uri",
+            "examples": [
+              "http://hl7.org/fhir/StructureDefinition/lipidprofile",
+              "http://hl7.org/fhir/us/davinci-alerts/StructureDefinition/notifications-messageheader"
+            ]
+          },
+          "expectedIssues": {
+            "type": "array",
+            "description": "[Optional] List of issues expected in the validation outcome. An issue with ERROR severity will result in a failed test unless specified here.",
+            "additionalProperties": false,
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
               "additionalProperties": false,
-              "uniqueItems": true,
-              "items": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "severity"
-                ],
-                "properties": {
-                  "severity": {
-                    "$ref": "#/$defs/severity"
-                  },
-                  "type": {
-                    "$ref": "#/$defs/type"
-                  },
-                  "location": {
-                    "description": "FHIRPath to the element within the FHIR resource expected to containing the error.",
-                    "type": "string"
-                  },
-                  "message": {
-                    "description": "The expected validation error message. Match is partial and case insensitive.",
-                    "type": "string"
-                  }
+              "required": [
+                "severity"
+              ],
+              "properties": {
+                "severity": {
+                  "$ref": "#/$defs/severity"
+                },
+                "type": {
+                  "$ref": "#/$defs/type"
+                },
+                "expression": {
+                  "description": "[Optional] FHIRPath to the element within the FHIR resource expected to containing the error.",
+                  "type": "string",
+                  "examples": [
+                    "Bundle.entry[0].resource.ofType(MessageHeader).source.endpoint"
+                  ]
+                },
+                "message": {
+                  "description": "[Optional] The expected validation error message. Match is partial and case insensitive.",
+                  "type": "string",
+                  "examples": [
+                    "element does not match any known slice"
+                  ]
                 }
               }
             }
           }
         }
       }
+    }
+  },
+  "$defs": {
+    "severity": {
+      "description": "[Required] The expected severity of the issue, see: https://www.hl7.org/fhir/valueset-issue-severity.html",
+      "enum": [
+        "FATAL",
+        "ERROR",
+        "WARNING",
+        "INFORMATION"
+      ]
     },
-    "$defs": {
-      "severity": {
-        "$comment": "https://www.hl7.org/fhir/valueset-issue-severity.html",
-        "description": "The expected severity of the issue.",
-        "enum": [
-          "FATAL",
-          "ERROR",
-          "WARNING",
-          "INFORMATION"
-        ]
-      },
-      "type": {
-        "$comment": "https://www.hl7.org/fhir/valueset-issue-type.html",
-        "description": "The expected type of issue.",
-        "enum": [
-          "INVALID",
-          "STRUCTURE",
-          "REQUIRED",
-          "VALUE",
-          "INVARIANT",
-          "SECURITY",
-          "LOGIN",
-          "UNKNOWN",
-          "EXPIRED",
-          "FORBIDDEN",
-          "SUPPRESSED",
-          "PROCESSING",
-          "NOTSUPPORTED",
-          "DUPLICATE",
-          "MULTIPLEMATCHES",
-          "NOTFOUND",
-          "DELETED",
-          "TOOLONG",
-          "CODEINVALID",
-          "EXTENSION",
-          "TOOCOSTLY",
-          "BUSINESSRULE",
-          "CONFLICT",
-          "TRANSIENT",
-          "LOCKERROR",
-          "NOSTORE",
-          "EXCEPTION",
-          "TIMEOUT",
-          "INCOMPLETE",
-          "THROTTLED",
-          "INFORMATIONAL"
-        ]
-      }
+    "type": {
+      "description": "[Optional] The expected type of issue, see: https://www.hl7.org/fhir/valueset-issue-type.html",
+      "enum": [
+        "INVALID",
+        "STRUCTURE",
+        "REQUIRED",
+        "VALUE",
+        "INVARIANT",
+        "SECURITY",
+        "LOGIN",
+        "UNKNOWN",
+        "EXPIRED",
+        "FORBIDDEN",
+        "SUPPRESSED",
+        "PROCESSING",
+        "NOTSUPPORTED",
+        "DUPLICATE",
+        "MULTIPLEMATCHES",
+        "NOTFOUND",
+        "DELETED",
+        "TOOLONG",
+        "CODEINVALID",
+        "EXTENSION",
+        "TOOCOSTLY",
+        "BUSINESSRULE",
+        "CONFLICT",
+        "TRANSIENT",
+        "LOCKERROR",
+        "NOSTORE",
+        "EXCEPTION",
+        "TIMEOUT",
+        "INCOMPLETE",
+        "THROTTLED",
+        "INFORMATIONAL"
+      ]
     }
   }
+}

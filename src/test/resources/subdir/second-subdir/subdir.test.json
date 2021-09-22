@@ -5,17 +5,17 @@
       "../../fhir-profiles"
     ]
   },
-  "testCases": [
+  "tests": [
     {
-      "resource": "../../fhir-instances/message-without-errors.json",
+      "source": "../../fhir-instances/message-without-errors.json",
       "profile": "http://fhir.nav.no/StructureDefinition/HopsMessage"
     },
     {
-      "resource": "../../fhir-instances/message-with-unexpected-error.json",
+      "source": "../../fhir-instances/message-with-unexpected-error.json",
       "profile": "http://fhir.nav.no/StructureDefinition/HopsMessage"
     },
     {
-      "resource": "../../fhir-instances/message-with-expected-errors.json",
+      "source": "../../fhir-instances/message-with-expected-errors.json",
       "profile": "http://fhir.nav.no/StructureDefinition/HopsMessage",
       "expectedIssues": [
         {

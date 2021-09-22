@@ -59,7 +59,7 @@ private fun createRootTestDescriptor(engineId: UniqueId, specFiles: List<Path>):
         val spec = ConfigLoader().loadConfigOrThrow<Specification>(path)
         val validator = ValidatorFactory.create(spec.validator, path)
 
-        spec.testCases.forEachIndexed { tcIndex, testCase ->
+        spec.tests.forEachIndexed { tcIndex, testCase ->
             val testCaseId = testSuiteId.append<TestCaseDescriptor>("$tcIndex")
             val testCaseDesc = TestCaseDescriptor(testCaseId, testCase, validator, path.fileSource(testCase))
             testSuiteDesc.addChild(testCaseDesc)
@@ -86,9 +86,9 @@ private class TestSuiteDescriptor(id: UniqueId, name: String, source: FileSource
 // BUG: If multiple TestCases uses the same resource they will all get FilePosition of the first.
 private fun Path.fileSource(testCase: Specification.TestCase): FileSource {
     readLines().forEachIndexed { line, str ->
-        var column = str.indexOf(testCase.resource)
+        var column = str.indexOf(testCase.source)
         if (column != -1) {
-            column = str.substring(0, column).lastIndexOf("\"resource\"")
+            column = str.substring(0, column).lastIndexOf("\"${Specification.TestCase::source.name}\"")
             return FileSource.from(toFile(), FilePosition.from(line + 1, column + 1))
         }
     }
