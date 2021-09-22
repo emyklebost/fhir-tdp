@@ -1,6 +1,7 @@
 .idea
 .gradle
 /build/
+test-reports
 
 # Ignore Gradle GUI config
 gradle-app.setting
