@@ -13,9 +13,11 @@ import org.junit.platform.engine.discovery.DirectorySelector
 import org.junit.platform.engine.discovery.FileSelector
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
+import org.junit.platform.engine.support.descriptor.FilePosition
 import org.junit.platform.engine.support.descriptor.FileSource
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.forEachLine
 import kotlin.io.path.name
 import kotlin.streams.asSequence
 
@@ -88,3 +90,22 @@ val configLoader = ConfigLoader.Builder()
     .addFileExtensionMapping("yaml", YamlParser())
     .addFileExtensionMapping("yml", YamlParser())
     .build()
+
+/** Creates a FileSource with FilePosition (line, column) of the 'source' property
+ ** of the Test with the specified index. Works with both json and yaml files. */
+private fun Path.fileSource(testIndex: Int): FileSource {
+    val pattern = if (name.endsWith(".json")) "\"source\"" else "[ {]source: "
+    val filePosition = findAllMatches(Regex(pattern)).elementAtOrNull(testIndex)
+    return FileSource.from(toFile(), filePosition)
+}
+
+private fun Path.findAllMatches(pattern: Regex) =
+    sequence<FilePosition> {
+        var lineNr = 1
+        forEachLine { line ->
+            pattern.findAll(line).forEach {
+                yield(FilePosition.from(lineNr, it.range.first + 1))
+            }
+            lineNr++
+        }
+    }
