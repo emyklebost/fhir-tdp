@@ -1,6 +1,5 @@
 {
     "recommendations": [
-        "vscjava.vscode-java-test",
-        "vscjava.vscode-java-dependency"
+        "vscjava.vscode-java-pack"
     ]
 }

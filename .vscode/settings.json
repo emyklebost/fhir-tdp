@@ -3,4 +3,14 @@
         "engine.jar",
         "junit-standalone.jar"
     ],
+    "java.test.config": [
+        {
+            "name": "myConfiguration",
+            "workingDirectory": "${workspaceFolder}",
+            "args": [
+                "-d", "src/test/resources",
+                "--reports-dir test-reports"
+            ],
+        }
+    ]
 }
