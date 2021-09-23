@@ -56,7 +56,7 @@ private fun createRootTestDescriptor(engineId: UniqueId, specFiles: List<Path>):
 
     specFiles.forEachIndexed { tsIndex, path ->
         val spec = configLoader.loadConfigOrThrow<Specification>(path)
-        val validator = ValidatorFactory.create(spec.validator, path)
+        val validator = FhirValidator.create(spec.validator, path)
 
         val testSuiteId = engineId.append<TestSuiteDescriptor>("$tsIndex")
         val testSuiteDesc = TestSuiteDescriptor(testSuiteId, spec.name ?: path.name, FileSource.from(path.toFile()))

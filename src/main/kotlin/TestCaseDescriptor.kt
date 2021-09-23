@@ -1,7 +1,5 @@
 package no.nav.helse
 
-import ca.uhn.fhir.context.FhirContext
-import org.hl7.fhir.instance.model.api.IBaseResource
 import org.hl7.fhir.r5.model.OperationOutcome
 import org.hl7.fhir.r5.utils.ToolingExtensions
 import org.junit.platform.engine.EngineExecutionListener
@@ -19,7 +17,7 @@ import kotlin.io.path.Path
 class TestCaseDescriptor(
     id: UniqueId,
     private val testCase: Specification.TestCase,
-    private val validator: Validator,
+    private val validator: FhirValidator,
     source: FileSource,
 ) : AbstractTestDescriptor(id, testCase.name ?: testCase.source, source) {
     override fun getType() = TestDescriptor.Type.TEST
@@ -32,23 +30,11 @@ class TestCaseDescriptor(
 
             val failures = testForUnexpectedErrors(testCase, outcome) + testForMissingExpectedIssues(testCase, outcome)
 
-            println(outcome.toJson())
-
             if (failures.any()) {
                 listener.reportingEntryPublished(this, createReportEntry(testCase, specFile))
                 throw if (failures.count() == 1) failures.single() else MultipleFailuresError(null, failures)
             }
         }
-}
-
-private fun IBaseResource.toJson(): String {
-    // Not thread safe, new instance must therefore be created.
-    val parser = FhirContext
-        .forCached(structureFhirVersionEnum)
-        .newJsonParser()
-        .setPrettyPrint(true)
-
-    return parser.encodeResourceToString(this)
 }
 
 private fun testForUnexpectedErrors(testCase: Specification.TestCase, outcome: OperationOutcome): List<AssertionFailedError> {
