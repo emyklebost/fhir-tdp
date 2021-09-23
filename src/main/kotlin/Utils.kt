@@ -1,15 +1,14 @@
 package no.nav.helse
 
-import org.hl7.fhir.r5.model.OperationOutcome
+import org.hl7.fhir.utilities.validation.ValidationMessage
 import org.junit.platform.engine.EngineExecutionListener
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.TestExecutionResult
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
 
-typealias Severity = OperationOutcome.IssueSeverity
-typealias IssueType = OperationOutcome.IssueType
-typealias IssueComponent = OperationOutcome.OperationOutcomeIssueComponent
+typealias Severity = ValidationMessage.IssueSeverity
+typealias IssueType = ValidationMessage.IssueType
 
 inline fun EngineExecutionListener.scope(testDescriptor: TestDescriptor, execute: () -> Unit) {
     try {
