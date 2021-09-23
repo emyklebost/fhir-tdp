@@ -16,10 +16,11 @@ import kotlin.io.path.Path
 internal object ValidatorFactory {
     private val cache = ConcurrentHashMap<Specification.Validator, Validator>()
 
-    fun create(config: Specification.Validator, specFilePath: Path): Validator =
-        cache.getOrPut(config) {
+    fun create(config: Specification.Validator, specFilePath: Path): Validator {
+        val resolvedConfig = config.withResolvedIgPaths(specFilePath)
+        return cache.getOrPut(resolvedConfig) {
             val service = ValidationService()
-            val ctx = config.withResolvedIgPaths(specFilePath).toCLIContext()
+            val ctx = resolvedConfig.toCLIContext()
 
             // Must use good-old if-check because for some reason the Elvis operator doesn't work here.
             if (ctx.sv == null) ctx.sv = service.determineVersion(ctx)
@@ -36,8 +37,9 @@ internal object ValidatorFactory {
                 }
             }
 
-            return Validator(engine)
+            Validator(engine)
         }
+    }
 }
 
 private fun Specification.Validator.toCLIContext(): CliContext {
