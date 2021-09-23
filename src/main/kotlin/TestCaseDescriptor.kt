@@ -24,11 +24,15 @@ class TestCaseDescriptor(
     override fun getTags() = testCase.tags.map(TestTag::create).toSet()
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {
+            println() // empty line for readability
+            println("> TEST: $displayName")
+
             val specFile = (source.get() as FileSource).file.toPath()
             val resourcePath = specFile.resolveAndNormalize(Path(testCase.source))
             val outcome = validator.validate(resourcePath, testCase.profile)
 
             val failures = testForUnexpectedErrors(testCase, outcome) + testForMissingExpectedIssues(testCase, outcome)
+            println(createSummary(outcome))
 
             if (failures.any()) {
                 listener.reportingEntryPublished(this, createReportEntry(testCase, specFile))
@@ -63,7 +67,7 @@ private fun testForMissingExpectedIssues(testCase: Specification.TestCase, outco
 }
 
 private fun IssueComponent.toData() =
-    Specification.Issue(severity, code, expression.joinToString("|") { it.asStringValue() }, details.text)
+    Specification.Issue(severity, code, expression.firstOrNull()?.asStringValue(), details.text)
 
 private fun IssueComponent.sourceUrl() =
     getExtensionByUrl(ToolingExtensions.EXT_ISSUE_SOURCE)?.valueStringType?.value
@@ -84,4 +88,23 @@ private fun createReportEntry(testCase: Specification.TestCase, specFile: Path) 
         )
 
         ReportEntry.from(values)
+    }
+
+private fun createSummary(outcome: OperationOutcome) =
+    StringBuilder().run {
+        val errors = outcome.issue.count { it.severity in listOf(Severity.ERROR, Severity.FATAL) }
+        val warnings = outcome.issue.count { it.severity == Severity.WARNING }
+        val infos = outcome.issue.count { it.severity == Severity.INFORMATION }
+
+        appendLine("  Finished: $errors errors, $warnings warnings, $infos notes")
+        outcome.issue.forEachIndexed { i, it ->
+            val issue = it.toData()
+            appendLine("  ${i+1}. ${it.sourceUrl()}")
+            appendLine("     Severity: ${issue.severity}")
+            appendLine("     Type: ${issue.type}")
+            appendLine("     Expression: ${issue.expression}")
+            appendLine("     Message: ${issue.message}")
+        }
+
+        toString()
     }

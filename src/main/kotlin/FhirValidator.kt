@@ -17,32 +17,27 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.Path
 
 class FhirValidator(private val validationEngine: ValidationEngine) {
-    private val cache = ConcurrentHashMap<Pair<Path, String?>, OperationOutcome>()
-
-    fun validate(source: Path, profile: String?): OperationOutcome =
-        cache.getOrPut(Pair(source, profile)) {
-            val outcome = validationEngine.validate(source.toString(), listOf(profile).mapNotNull { it })
-            prettify(outcome)
-        }
+    fun validate(source: Path, profile: String?): OperationOutcome {
+        val outcome = validationEngine.validate(source.toString(), listOf(profile).mapNotNull { it })
+        return withPositionFileSources(outcome)
+    }
 
     companion object {
+        private val service = ValidationService()
         private val cache = ConcurrentHashMap<Specification.Validator, FhirValidator>()
 
         fun create(config: Specification.Validator, specFilePath: Path): FhirValidator {
             val resolvedConfig = config.withResolvedIgPaths(specFilePath)
             return cache.getOrPut(resolvedConfig) {
-                val service = ValidationService()
                 val ctx = resolvedConfig.toCLIContext()
 
                 // Must use good-old if-check because for some reason the Elvis operator doesn't work here.
                 if (ctx.sv == null) ctx.sv = service.determineVersion(ctx)
 
-                val definitions = "${VersionUtilities.packageForVersion(ctx.sv)}#${
-                VersionUtilities.getCurrentVersion(
-                    ctx.sv
-                )
-                }"
-                val engine = service.initializeValidator(ctx, definitions, TimeTracker())
+                val packageName = VersionUtilities.packageForVersion(ctx.sv)
+                val version = VersionUtilities.getCurrentVersion(ctx.sv)
+
+                val engine = service.initializeValidator(ctx, "$packageName#$version", TimeTracker())
 
                 ctx.profiles.forEach {
                     if (!engine.context.hasResource(StructureDefinition::class.java, it) &&
@@ -59,9 +54,7 @@ class FhirValidator(private val validationEngine: ValidationEngine) {
     }
 }
 
-private fun prettify(outcome: OperationOutcome): OperationOutcome {
-    outcome.text = null // <- Removed because this is just noise when displayed in a terminal.
-
+private fun withPositionFileSources(outcome: OperationOutcome): OperationOutcome {
     val file = outcome.getExtensionByUrl(ToolingExtensions.EXT_OO_FILE)?.valueStringType?.value
     if (file != null) {
         outcome.issue.forEach {
