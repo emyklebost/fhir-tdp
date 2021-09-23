@@ -75,7 +75,7 @@ private fun FileSource.toUrl() = "${file.toPath().toUri()}:${position.get().line
 private fun Specification.Issue.semanticallyEquals(other: Specification.Issue): Boolean {
     if (severity != other.severity) return false
     if (type != null && type != other.type) return false
-    if (expression != null && expression != other.expression) return false
+    if (expression != null && !expression.contentEquals(other.expression, ignoreCase = true)) return false
     return (message == null || (other.message?.contains(message, ignoreCase = true) == true))
 }
 

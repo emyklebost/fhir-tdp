@@ -11,6 +11,7 @@ typealias Severity = OperationOutcome.IssueSeverity
 typealias IssueType = OperationOutcome.IssueType
 typealias IssueComponent = OperationOutcome.OperationOutcomeIssueComponent
 
+// Inlined to tidy up the stack-trace of failed tests.
 inline fun EngineExecutionListener.scope(testDescriptor: TestDescriptor, execute: () -> Unit) {
     try {
         executionStarted(testDescriptor)
