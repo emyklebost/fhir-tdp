@@ -4,7 +4,6 @@ import org.hl7.fhir.r5.model.OperationOutcome
 import org.junit.platform.engine.EngineExecutionListener
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.TestExecutionResult
-import org.junit.platform.engine.UniqueId
 import java.nio.file.Path
 import kotlin.io.path.isDirectory
 
@@ -21,8 +20,6 @@ inline fun EngineExecutionListener.scope(testDescriptor: TestDescriptor, execute
         executionFinished(testDescriptor, TestExecutionResult.failed(error))
     }
 }
-
-inline fun <reified T> UniqueId.append(value: String) = append(T::class.simpleName, value)!!
 
 fun Path.resolveAndNormalize(path: Path): Path {
     if (path.isAbsolute) return path

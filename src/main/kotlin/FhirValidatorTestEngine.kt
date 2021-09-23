@@ -73,6 +73,8 @@ private fun createRootTestDescriptor(engineId: UniqueId, specFiles: List<Path>):
     return rootTestDesc
 }
 
+private inline fun <reified T> UniqueId.append(value: String) = append(T::class.simpleName, value)!!
+
 private class TestSuiteDescriptor(id: UniqueId, name: String, source: FileSource) :
     AbstractTestDescriptor(id, name, source) {
     override fun getType() = TestDescriptor.Type.CONTAINER
