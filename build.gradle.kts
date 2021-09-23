@@ -17,6 +17,15 @@ tasks {
         useJUnitPlatform()
     }
 
+    shadowJar {
+        dependencies {
+            // These dependencies are already available in the junit-platform-console-standalone.jar
+            // and validator_cli.jar, can therefore be omitted to reduce size.
+            exclude(dependency("com.fasterxml.*::"))
+            exclude(dependency("org.junit.*::"))
+        }
+    }
+
     jar {
         manifest {
             attributes(
