@@ -40,6 +40,8 @@ class FhirValidatorTestEngine : TestEngine {
     }
 
     override fun execute(request: ExecutionRequest) {
+        println() // empty line for readability
+
         val rootTestDesc = request.rootTestDescriptor
         val listener = request.engineExecutionListener
 

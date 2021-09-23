@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     kotlin("jvm") version "1.5.30"
     id("com.github.johnrengelman.shadow") version "7.0.0"
@@ -15,6 +17,10 @@ repositories {
 tasks {
     withType<Test> {
         useJUnitPlatform()
+    }
+
+    withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = "11"
     }
 
     shadowJar {
@@ -39,13 +45,13 @@ tasks {
 }
 
 dependencies {
-    compileOnly("ca.uhn.hapi.fhir:org.hl7.fhir.validation:5.5.1")
-    implementation("org.junit.platform:junit-platform-engine:1.8.0")
+    compileOnly("ca.uhn.hapi.fhir:org.hl7.fhir.validation:5.5.3")
     implementation("com.sksamuel.hoplite:hoplite-json:1.4.7")
     implementation("com.sksamuel.hoplite:hoplite-yaml:1.4.7")
+    implementation("org.junit.platform:junit-platform-engine:1.8.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.0")
     testImplementation("org.junit.platform:junit-platform-testkit:1.8.0")
-    testRuntimeOnly("ca.uhn.hapi.fhir:org.hl7.fhir.validation:5.5.1")
+    testRuntimeOnly("ca.uhn.hapi.fhir:org.hl7.fhir.validation:5.5.3")
     testRuntimeOnly("com.squareup.okhttp3:okhttp:4.9.1")
     testRuntimeOnly("org.slf4j:slf4j-nop:1.7.32")
 }

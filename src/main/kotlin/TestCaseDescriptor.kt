@@ -13,24 +13,26 @@ import org.opentest4j.AssertionFailedError
 import org.opentest4j.MultipleFailuresError
 import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.nameWithoutExtension
 
 class TestCaseDescriptor(
     id: UniqueId,
     private val testCase: Specification.TestCase,
     private val validator: FhirValidator,
     source: FileSource,
-) : AbstractTestDescriptor(id, testCase.name ?: testCase.source, source) {
+) : AbstractTestDescriptor(id, testCase.name ?: Path(testCase.source).nameWithoutExtension, source) {
     override fun getType() = TestDescriptor.Type.TEST
     override fun getTags() = testCase.tags.map(TestTag::create).toSet()
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {
-            println() // empty line for readability
+            val fileSource = (source.get() as FileSource)
             println("> TEST: $displayName")
 
-            val specFile = (source.get() as FileSource).file.toPath()
+            val specFile = fileSource.file.toPath()
             val resourcePath = specFile.resolveAndNormalize(Path(testCase.source))
             val outcome = validator.validate(resourcePath, testCase.profile)
 
+            println("  Location: ${fileSource.toUrl()}")
             val failures = testForUnexpectedErrors(testCase, outcome) + testForMissingExpectedIssues(testCase, outcome)
             println(createSummary(outcome))
 
@@ -66,11 +68,9 @@ private fun testForMissingExpectedIssues(testCase: Specification.TestCase, outco
     return missingIssueFailures
 }
 
-private fun IssueComponent.toData() =
-    Specification.Issue(severity, code, expression.firstOrNull()?.asStringValue(), details.text)
-
-private fun IssueComponent.sourceUrl() =
-    getExtensionByUrl(ToolingExtensions.EXT_ISSUE_SOURCE)?.valueStringType?.value
+private fun IssueComponent.toData() = Specification.Issue(severity, code, expression.firstOrNull()?.asStringValue(), details.text)
+private fun IssueComponent.sourceUrl() = getExtensionByUrl(ToolingExtensions.EXT_ISSUE_SOURCE)?.valueStringType?.value
+private fun FileSource.toUrl() = "${file.toPath().toUri()}:${position.get().line}:${position.get().column.get()}"
 
 private fun Specification.Issue.semanticallyEquals(other: Specification.Issue): Boolean {
     if (severity != other.severity) return false
@@ -99,7 +99,7 @@ private fun createSummary(outcome: OperationOutcome) =
         appendLine("  Finished: $errors errors, $warnings warnings, $infos notes")
         outcome.issue.forEachIndexed { i, it ->
             val issue = it.toData()
-            appendLine("  ${i + 1}. ${it.sourceUrl()}")
+            appendLine("  ${i + 1}. Source: ${it.sourceUrl()}")
             appendLine("     Severity: ${issue.severity}")
             appendLine("     Type: ${issue.type}")
             appendLine("     Expression: ${issue.expression}")
