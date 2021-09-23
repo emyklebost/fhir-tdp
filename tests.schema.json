@@ -17,7 +17,7 @@
       "properties": {
         "version": {
           "type": "string",
-          "description": "[Optional] The FHIR version to use, the default is to use 'current' which is R5",
+          "description": "[Optional] The FHIR version to use, the default is to use 'current' which is R5.",
           "default": "current",
           "examples": [
             "4.0",
@@ -26,10 +26,9 @@
         },
         "terminologyService": {
           "type": "string",
-          "description": "[Optional] The (base) url of a FHIR terminology service. To run without terminology value, specific n/a as the URL",
-          "default": "http://tx.fhir.org",
+          "description": "[Optional] The (base) url of a FHIR terminology service. The default is to not use a terminology service.",
+          "default": "n/a",
           "examples": [
-            "n/a",
             "http://tx.fhir.org"
           ]
         },
@@ -58,12 +57,13 @@
         },
         "igs": {
           "type": "array",
-          "description": "[Optional] IGs or profile definitions to load. Can be file, folder, URL or package ([id]-[ver]) of an implementation guide. The base profiles will always be loaded.",
+          "description": "[Optional] IGs or profile definitions to load. Can be file, folder, URL or package ([id]#[ver]) of an implementation guide. The base profiles will always be loaded.",
           "uniqueItems": true,
           "items": {
             "type": "string",
             "examples": [
-              "../fsh-generated/resources"
+              "../fsh-generated/resources",
+              "hl7.fhir.us.core#1.0.1"
             ]
           }
         }
