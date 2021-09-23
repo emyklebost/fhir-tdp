@@ -1,10 +1,5 @@
 ---
-name: "My Test Suite name"
 validator:
   version: '4.0'
 tests:
-  - name: "Message must conform to base profile"
-    source: "fhir-instances/message-without-errors.json"
-    tags:
-      - "my-tag1"
-      - "my-tag2"
+  - source: "fhir-instances/message-without-errors.json"

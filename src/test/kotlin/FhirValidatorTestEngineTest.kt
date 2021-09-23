@@ -28,4 +28,16 @@ class FhirValidatorTestEngineTest {
                 it.started(1).succeeded(1).failed(0).aborted(0).skipped(0)
             }
     }
+
+    @Test
+    fun `Given a test with questionnaire-response as source, it should be validated against its questionnaire`() {
+        EngineTestKit
+            .engine(FhirValidatorTestEngine())
+            .selectors(selectFile("src/test/resources/questionnaire.test.yaml"))
+            .execute()
+            .testEvents()
+            .assertStatistics {
+                it.started(2).succeeded(1).failed(1).aborted(0).skipped(0)
+            }
+    }
 }

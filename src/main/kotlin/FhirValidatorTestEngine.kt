@@ -94,7 +94,7 @@ private val configLoader = ConfigLoader.Builder()
     .build()
 
 /** Creates a FileSource with FilePosition (line, column) of the 'source' property
- ** of the Test with the specified index. Works with both json and yaml files. */
+ ** of the Test at [[testIndex]]. Works with both json and yaml files. */
 private fun Path.fileSource(testIndex: Int): FileSource {
     val pattern = if (name.endsWith(".json")) "\"source\"" else "[ {]source: "
     val filePosition = findAllMatches(Regex(pattern)).elementAtOrNull(testIndex)
@@ -103,10 +103,13 @@ private fun Path.fileSource(testIndex: Int): FileSource {
 
 private fun Path.findAllMatches(pattern: Regex) =
     sequence<FilePosition> {
+        val commentLinePattern = Regex("^ *#")
         var lineNr = 1
         forEachLine { line ->
-            pattern.findAll(line).forEach {
-                yield(FilePosition.from(lineNr, it.range.first + 1))
+            if (!commentLinePattern.matches(line)) {
+                pattern.findAll(line).forEach {
+                    yield(FilePosition.from(lineNr, it.range.first + 1))
+                }
             }
             lineNr++
         }

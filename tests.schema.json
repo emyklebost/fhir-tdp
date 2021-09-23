@@ -100,7 +100,7 @@
             "uniqueItems": true,
             "items": {
               "type": "string",
-              "pattern": "^[^,()&|! ]{1,}$",
+              "pattern": "^[^,()&|! ]+$",
               "examples": [
                 "sut"
               ]
@@ -139,7 +139,7 @@
       }
     }
   },
-  "$defs": {    
+  "$defs": {
     "severity": {
       "description": "[Required] The expected severity of the issue, see: https://www.hl7.org/fhir/valueset-issue-severity.html",
       "enum": [

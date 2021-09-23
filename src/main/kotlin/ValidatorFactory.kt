@@ -8,6 +8,7 @@ import org.hl7.fhir.utilities.VersionUtilities.packageForVersion
 import org.hl7.fhir.validation.cli.model.CliContext
 import org.hl7.fhir.validation.cli.services.ValidationService
 import org.hl7.fhir.validation.cli.utils.Params
+import org.hl7.fhir.validation.cli.utils.QuestionnaireMode
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.Path
@@ -41,6 +42,9 @@ internal object ValidatorFactory {
 
 private fun Specification.Validator.toCLIContext(): CliContext {
     val args = mutableListOf<String>()
+
+    args.add(Params.STRICT_EXTENSIONS)
+    args.addAll(listOf(Params.QUESTIONNAIRE, QuestionnaireMode.REQUIRED.name))
 
     igs.forEach { args.addAll(listOf(Params.IMPLEMENTATION_GUIDE, it)) }
     version?.let { args.addAll(listOf(Params.VERSION, it)) }

@@ -67,7 +67,7 @@ private fun testForMissingExpectedIssues(testCase: Specification.TestCase, outco
     val issues = outcome.issue.map { it.toData() }
 
     val missingIssueFailures = testCase.expectedIssues
-        .filter { expected -> issues.any { expected.semanticallyEquals(it) } }
+        .filterNot { expected -> issues.any { expected.semanticallyEquals(it) } }
         .map { AssertionFailedError("Expected issue was not found: $it.") }
 
     val foundCount = testCase.expectedIssues.count() - missingIssueFailures.count()
