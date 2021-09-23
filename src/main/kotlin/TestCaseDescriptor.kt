@@ -99,7 +99,7 @@ private fun createSummary(outcome: OperationOutcome) =
         appendLine("  Finished: $errors errors, $warnings warnings, $infos notes")
         outcome.issue.forEachIndexed { i, it ->
             val issue = it.toData()
-            appendLine("  ${i+1}. ${it.sourceUrl()}")
+            appendLine("  ${i + 1}. ${it.sourceUrl()}")
             appendLine("     Severity: ${issue.severity}")
             appendLine("     Type: ${issue.type}")
             appendLine("     Expression: ${issue.expression}")
