@@ -27,12 +27,12 @@ class TestCaseDescriptor(
         listener.scope(this) {
             val fileSource = (source.get() as FileSource)
             println("> TEST: $displayName")
+            println("  Location: ${fileSource.toUrl()}")
 
             val specFile = fileSource.file.toPath()
             val resourcePath = specFile.resolveAndNormalize(Path(testCase.source))
             val outcome = validator.validate(resourcePath, testCase.profile)
 
-            println("  Location: ${fileSource.toUrl()}")
             val failures = testForUnexpectedErrors(testCase, outcome) + testForMissingExpectedIssues(testCase, outcome)
             println(createSummary(outcome))
 
