@@ -10,8 +10,6 @@ import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.support.descriptor.FileSource
 import org.opentest4j.AssertionFailedError
 import org.opentest4j.MultipleFailuresError
-import java.nio.file.Path
-import kotlin.io.path.Path
 import kotlin.io.path.nameWithoutExtension
 
 class TestCaseDescriptor(
@@ -19,25 +17,22 @@ class TestCaseDescriptor(
     private val testCase: Specification.TestCase,
     private val validator: FhirValidator,
     source: FileSource,
-) : AbstractTestDescriptor(id, testCase.name ?: Path(testCase.source).nameWithoutExtension, source) {
+) : AbstractTestDescriptor(id, testCase.name ?: testCase.source.nameWithoutExtension, source) {
     override fun getType() = TestDescriptor.Type.TEST
     override fun getTags() = testCase.tags.map(TestTag::create).toSet()
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {
-            val fileSource = (source.get() as FileSource)
             println("> " + Theme.title.format("TEST: $displayName"))
-            println("  Location: ${fileSource.toUrl()}")
+            println("  Location: ${(source.get() as FileSource).toUrl()}")
             if (tags.any()) { println(Theme.tags.format("  Tags: ${tags.joinToString { it.name }}")) }
 
-            val specFile = fileSource.file.toPath()
-            val resourcePath = specFile.resolveAndNormalize(Path(testCase.source))
-            val outcome = validator.validate(resourcePath, testCase.profile)
+            val outcome = validator.validate(testCase.source, testCase.profile)
 
             val failures = UnexpectedIssue.test(testCase, outcome) + MissingIssue.test(testCase, outcome)
             println(createSummary(outcome, failures))
 
             if (failures.any()) {
-                listener.reportingEntryPublished(this, createReportEntry(testCase, specFile))
+                listener.reportingEntryPublished(this, createReportEntry(testCase))
                 throw if (failures.count() == 1) failures.single() else MultipleFailuresError(null, failures)
             }
         }
@@ -45,10 +40,10 @@ class TestCaseDescriptor(
 
 private fun FileSource.toUrl() = "${file.toPath().toUri()}:${position.get().line}:${position.get().column.get()}"
 
-private fun createReportEntry(testCase: Specification.TestCase, specFile: Path) =
+private fun createReportEntry(testCase: Specification.TestCase) =
     testCase.run {
         val values = mapOf(
-            Pair(Specification.TestCase::source.name, "${specFile.resolveAndNormalize(Path(source)).toUri()}"),
+            Pair(Specification.TestCase::source.name, "${source.toUri()}"),
             Pair(Specification.TestCase::profile.name, profile ?: "core"),
             Pair("${Specification.TestCase::expectedIssues.name}Count", "${expectedIssues.count()}")
         )

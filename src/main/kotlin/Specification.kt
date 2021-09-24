@@ -1,12 +1,14 @@
 package no.nav.helse
 
+import java.nio.file.Path
+
 data class Specification(
     val name: String?,
     val validator: Validator = Validator(),
     val tests: List<TestCase> = emptyList()
 ) {
     data class TestCase(
-        val source: String,
+        val source: Path,
         val name: String?,
         val profile: String?,
         val expectedIssues: List<Issue> = emptyList(),

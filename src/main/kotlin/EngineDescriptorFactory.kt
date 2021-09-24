@@ -8,7 +8,9 @@ import org.junit.platform.engine.support.descriptor.EngineDescriptor
 import org.junit.platform.engine.support.descriptor.FilePosition
 import org.junit.platform.engine.support.descriptor.FileSource
 import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.io.path.forEachLine
+import kotlin.io.path.isDirectory
 import kotlin.io.path.name
 
 object EngineDescriptorFactory {
@@ -16,15 +18,17 @@ object EngineDescriptorFactory {
         val engineDesc = EngineDescriptor(engineId, "FHIR Validator")
 
         specFiles.forEachIndexed { tsIndex, path ->
-            val spec = configLoader.loadConfigOrThrow<Specification>(path)
-            val validator = FhirValidator.create(spec.validator, path)
+            val spec = loadConfig(path)
+            val validator = FhirValidator.create(spec.validator)
 
             val testSuiteId = engineId.append<TestSuiteDescriptor>("$tsIndex")
-            val testSuiteDesc = TestSuiteDescriptor(testSuiteId, spec.name ?: path.name, FileSource.from(path.toFile()))
+            val testSuiteSource = FileSource.from(path.toFile())
+            val testSuiteDesc = TestSuiteDescriptor(testSuiteId, spec.name ?: path.name, testSuiteSource)
 
             spec.tests.forEachIndexed { tcIndex, testCase ->
                 val testCaseId = testSuiteId.append<TestCaseDescriptor>("$tcIndex")
-                val testCaseDesc = TestCaseDescriptor(testCaseId, testCase, validator, path.fileSource(tcIndex))
+                val testCaseSource = createFileSource(path, tcIndex)
+                val testCaseDesc = TestCaseDescriptor(testCaseId, testCase, validator, testCaseSource)
                 testSuiteDesc.addChild(testCaseDesc)
             }
 
@@ -44,24 +48,54 @@ private val configLoader = ConfigLoader.Builder()
     .addFileExtensionMapping("yml", YamlParser())
     .build()
 
-/** Creates a FileSource with FilePosition (line, column) of the 'source' property
- ** of the Test at [[testIndex]]. Works with both json and yaml files. */
-private fun Path.fileSource(testIndex: Int): FileSource {
-    val pattern = if (name.endsWith(".json")) "\"source\"" else "[ {]source: "
-    val filePosition = findAllMatches(Regex(pattern)).elementAtOrNull(testIndex)
-    return FileSource.from(toFile(), filePosition)
-}
+/** Loads the config/specification and resolves all relative paths. */
+private fun loadConfig(specPath: Path): Specification {
+    fun resolveAndNormalize(path: Path): Path {
+        if (path.isAbsolute) return path
+        val dir = if (specPath.isDirectory()) specPath else specPath.parent
+        return dir.resolve(path).normalize()
+    }
 
-private fun Path.findAllMatches(pattern: Regex) =
-    sequence<FilePosition> {
-        val commentLinePattern = Regex("^ *#")
-        var lineNr = 1
-        forEachLine { line ->
-            if (!commentLinePattern.matches(line)) {
-                pattern.findAll(line).forEach {
-                    yield(FilePosition.from(lineNr, it.range.first + 1))
-                }
-            }
-            lineNr++
+    val config = configLoader.loadConfigOrThrow<Specification>(specPath)
+
+    // An IG can be specified as either package, file, folder or URL.
+    // In case of file or folder we want the path to be resolved relative to the specification file.
+    val resolvedIgs = config.validator.igs.map {
+        try {
+            resolveAndNormalize(Path(it)).toString()
+        } catch (ex: Throwable) {
+            it
         }
     }
+
+    val testsWithResolvedSource = config.tests.map {
+        it.copy(source = resolveAndNormalize(it.source))
+    }
+
+    return config.copy(
+        validator = config.validator.copy(igs = resolvedIgs),
+        tests = testsWithResolvedSource
+    )
+}
+
+/** Creates a FileSource with FilePosition (line, column) of the 'source' property
+ ** of the Test at [[testIndex]]. Works with both json and yaml files. */
+private fun createFileSource(specPath: Path, testIndex: Int): FileSource {
+    fun findAllMatches(pattern: Regex) =
+        sequence<FilePosition> {
+            val commentLinePattern = Regex("^ *#")
+            var lineNr = 1
+            specPath.forEachLine { line ->
+                if (!commentLinePattern.matches(line)) {
+                    pattern.findAll(line).forEach {
+                        yield(FilePosition.from(lineNr, it.range.first + 1))
+                    }
+                }
+                lineNr++
+            }
+        }
+
+    val pattern = if (specPath.name.endsWith(".json")) "\"source\"" else "[ {]source: "
+    val filePosition = findAllMatches(Regex(pattern)).elementAtOrNull(testIndex)
+    return FileSource.from(specPath.toFile(), filePosition)
+}
