@@ -11,8 +11,8 @@ class UnexpectedIssue(val issue: Specification.Issue, val source: String?) : Ass
                 .filterNot { it.issue.severity in listOf(Severity.INFORMATION, Severity.WARNING) }
                 .filterNot { testCase.expectedIssues.any { expected -> expected.semanticallyEquals(it.issue) } }
 
-            val f = if (unexpectedErrorFailures.isEmpty()) Theme.pass else Theme.fail
-            println(f.format("  ${unexpectedErrorFailures.count()} unexpected error(s)!"))
+            val color = if (unexpectedErrorFailures.isEmpty()) Color.SUCCESSFUL else Color.FAILED
+            println(color.paint("  ${unexpectedErrorFailures.count()} unexpected error(s)!"))
 
             return unexpectedErrorFailures
         }
@@ -29,8 +29,8 @@ class MissingIssue(val issue: Specification.Issue) : AssertionFailedError("Expec
                 .map { MissingIssue(it) }
 
             val foundCount = testCase.expectedIssues.count() - missingIssueFailures.count()
-            val f = if (foundCount == testCase.expectedIssues.count()) Theme.pass else Theme.fail
-            println(f.format("  Found $foundCount of ${testCase.expectedIssues.count()} expected issue(s)!"))
+            val color = if (foundCount == testCase.expectedIssues.count()) Color.SUCCESSFUL else Color.FAILED
+            println(color.paint("  Found $foundCount of ${testCase.expectedIssues.count()} expected issue(s)!"))
 
             return missingIssueFailures
         }

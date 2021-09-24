@@ -22,9 +22,9 @@ class TestCaseDescriptor(
     override fun getTags() = testCase.tags.map(TestTag::create).toSet()
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {
-            println("> " + Theme.title.format("TEST: $displayName"))
+            println("> " + Color.TITLE.paint("TEST: $displayName"))
             println("  Location: ${(source.get() as FileSource).toUrl()}")
-            if (tags.any()) { println(Theme.tags.format("  Tags: ${tags.joinToString { it.name }}")) }
+            if (tags.any()) { println(Color.TAGS.paint("  Tags: ${tags.joinToString { it.name }}")) }
 
             val outcome = validator.validate(testCase.source, testCase.profile)
 
@@ -75,10 +75,10 @@ private fun createSummary(outcome: OperationOutcome, failedAssertions: List<Asse
     }
 
 private fun StringBuilder.append(mark: String, issue: Specification.Issue, source: String?, fail: Boolean) {
-    val f = if (fail) Theme.fail else Theme.info
-    appendLine(f.format("  $mark. Source: $source"))
-    appendLine(f.format("     Severity: ${issue.severity}"))
-    appendLine(f.format("     Type: ${issue.type}"))
-    appendLine(f.format("     Expression: ${issue.expression}"))
-    appendLine(f.format("     Message: ${issue.message}"))
+    val color = if (fail) Color.FAILED else Color.INFO
+    appendLine(color.paint("  $mark. Source: $source"))
+    appendLine(color.paint("     Severity: ${issue.severity}"))
+    appendLine(color.paint("     Type: ${issue.type}"))
+    appendLine(color.paint("     Expression: ${issue.expression}"))
+    appendLine(color.paint("     Message: ${issue.message}"))
 }

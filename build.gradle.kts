@@ -49,7 +49,6 @@ dependencies {
     compileOnly("org.junit.platform:junit-platform-engine:1.8.0")
     implementation("com.sksamuel.hoplite:hoplite-json:1.4.7")
     implementation("com.sksamuel.hoplite:hoplite-yaml:1.4.7")
-    implementation("com.diogonunes:JColor:5.0.1")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.0")
     testImplementation("org.junit.platform:junit-platform-testkit:1.8.0")
     testRuntimeOnly("ca.uhn.hapi.fhir:org.hl7.fhir.validation:5.5.3")

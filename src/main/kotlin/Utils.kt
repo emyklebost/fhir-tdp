@@ -1,7 +1,5 @@
 package no.nav.helse
 
-import com.diogonunes.jcolor.AnsiFormat
-import com.diogonunes.jcolor.Attribute
 import org.hl7.fhir.r5.model.OperationOutcome
 import org.hl7.fhir.r5.utils.ToolingExtensions
 import org.junit.platform.engine.EngineExecutionListener
@@ -11,16 +9,6 @@ import org.junit.platform.engine.TestExecutionResult
 typealias Severity = OperationOutcome.IssueSeverity
 typealias IssueType = OperationOutcome.IssueType
 typealias IssueComponent = OperationOutcome.OperationOutcomeIssueComponent
-
-/** See https://github.com/dialex/JColor on how to customize.
- *  Trying to adhere to Junit TestExecutionSummary's coloring-scheme. */
-object Theme {
-    val title = AnsiFormat(Attribute.CYAN_TEXT())
-    val tags = AnsiFormat(Attribute.YELLOW_TEXT())
-    val pass = AnsiFormat(Attribute.GREEN_TEXT())
-    val fail = AnsiFormat(Attribute.RED_TEXT())
-    val info = AnsiFormat(Attribute.BLUE_TEXT())
-}
 
 // Inlined to tidy up the stack-trace of failed tests.
 inline fun EngineExecutionListener.scope(testDescriptor: TestDescriptor, execute: () -> Unit) {
