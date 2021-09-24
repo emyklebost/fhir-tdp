@@ -1,13 +1,13 @@
 package no.nav.helse
 
 import org.hl7.fhir.r5.model.OperationOutcome
-import org.junit.platform.engine.EngineExecutionListener
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.TestTag
 import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.reporting.ReportEntry
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.support.descriptor.FileSource
+import org.junit.platform.engine.support.hierarchical.Node
 import org.opentest4j.AssertionFailedError
 import org.opentest4j.MultipleFailuresError
 import kotlin.io.path.nameWithoutExtension
@@ -17,25 +17,30 @@ class TestCaseDescriptor(
     private val testCase: Specification.TestCase,
     private val validator: FhirValidator,
     source: FileSource,
-) : AbstractTestDescriptor(id, testCase.name ?: testCase.source.nameWithoutExtension, source) {
+) : AbstractTestDescriptor(id, testCase.name ?: testCase.source.nameWithoutExtension, source),
+    Node<FhirValidatorExecutionContext> {
     override fun getType() = TestDescriptor.Type.TEST
     override fun getTags() = testCase.tags.map(TestTag::create).toSet()
-    fun execute(listener: EngineExecutionListener) =
-        listener.scope(this) {
-            println("> " + Color.TITLE.paint("TEST: $displayName"))
-            println("  Location: ${(source.get() as FileSource).toUrl()}")
-            if (tags.any()) { println(Color.TAGS.paint("  Tags: ${tags.joinToString { it.name }}")) }
+    override fun execute(
+        context: FhirValidatorExecutionContext,
+        dynamicTestExecutor: Node.DynamicTestExecutor?
+    ): FhirValidatorExecutionContext {
+        println("> " + Color.TITLE.paint("TEST: $displayName"))
+        println("  Location: ${(source.get() as FileSource).toUrl()}")
+        if (tags.any()) { println(Color.TAGS.paint("  Tags: ${tags.joinToString { it.name }}")) }
 
-            val outcome = validator.validate(testCase.source, testCase.profile)
+        val outcome = validator.validate(testCase.source, testCase.profile)
 
-            val failures = UnexpectedIssue.test(testCase, outcome) + MissingIssue.test(testCase, outcome)
-            println(createSummary(outcome, failures))
+        val failures = UnexpectedIssue.test(testCase, outcome) + MissingIssue.test(testCase, outcome)
+        println(createSummary(outcome, failures))
 
-            if (failures.any()) {
-                listener.reportingEntryPublished(this, createReportEntry(testCase))
-                throw if (failures.count() == 1) failures.single() else MultipleFailuresError(null, failures)
-            }
+        if (failures.any()) {
+            context.listener.reportingEntryPublished(this, createReportEntry(testCase))
+            throw if (failures.count() == 1) failures.single() else MultipleFailuresError(null, failures)
         }
+
+        return context
+    }
 }
 
 private fun FileSource.toUrl() = "${file.toPath().toUri()}:${position.get().line}:${position.get().column.get()}"

@@ -3,10 +3,13 @@ package no.nav.helse
 import com.sksamuel.hoplite.ConfigLoader
 import com.sksamuel.hoplite.json.JsonParser
 import com.sksamuel.hoplite.yaml.YamlParser
+import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.UniqueId
+import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
 import org.junit.platform.engine.support.descriptor.FilePosition
 import org.junit.platform.engine.support.descriptor.FileSource
+import org.junit.platform.engine.support.hierarchical.Node
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.forEachLine
@@ -96,4 +99,9 @@ private fun createFileSource(specPath: Path, testIndex: Int): FileSource {
     val pattern = if (specPath.name.endsWith(".json")) "\"source\"" else "[ {]source: "
     val filePosition = findAllMatches(Regex(pattern)).elementAtOrNull(testIndex)
     return FileSource.from(specPath.toFile(), filePosition)
+}
+
+private class TestSuiteDescriptor(id: UniqueId, name: String, source: FileSource) :
+    AbstractTestDescriptor(id, name, source), Node<FhirValidatorExecutionContext> {
+    override fun getType() = TestDescriptor.Type.CONTAINER
 }

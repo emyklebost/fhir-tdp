@@ -4,17 +4,17 @@ import org.junit.platform.engine.ConfigurationParameters
 import org.junit.platform.engine.EngineDiscoveryRequest
 import org.junit.platform.engine.ExecutionRequest
 import org.junit.platform.engine.TestDescriptor
-import org.junit.platform.engine.TestEngine
 import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.discovery.DirectorySelector
 import org.junit.platform.engine.discovery.FileSelector
+import org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.name
 import kotlin.streams.asSequence
 
-class FhirValidatorTestEngine : TestEngine {
+class FhirValidatorTestEngine : HierarchicalTestEngine<FhirValidatorExecutionContext>() {
     override fun getId() = "fhir-validator"
 
     override fun discover(discoveryRequest: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor {
@@ -34,35 +34,18 @@ class FhirValidatorTestEngine : TestEngine {
         return EngineDescriptorFactory.create(uniqueId, specFiles)
     }
 
-    override fun execute(request: ExecutionRequest) {
-        println() // empty line for readability
-
-        val engineDesc = request.rootTestDescriptor
-        val listener = request.engineExecutionListener
-
-        listener.scope(engineDesc) {
-            engineDesc.children
-                .mapNotNull { it as? TestSuiteDescriptor }
-                .forEach { it.execute(listener) }
-        }
-    }
+    override fun createExecutionContext(request: ExecutionRequest) =
+        FhirValidatorExecutionContext(request.engineExecutionListener)
 }
 
 // See https://junit.org/junit5/docs/current/user-guide/#running-tests-config-params
-private data class Config(
-    val selectDirectory: Path?,
-    val postfix: String,
-) {
+private data class Config(val selectDirectory: Path?, val postfix: String) {
     companion object {
         fun create(params: ConfigurationParameters) =
             params.run {
-                val dir = get("no.nav.select-directory")
-                    .run { if (isPresent) Path(get()) else null }
-
-                val postfix = get("no.nav.test-postfix")
-                    .run { if (isPresent) get() else "test" }
-
-                Config(dir, postfix)
+                Config(
+                    get("no.nav.select-directory").run { if (isPresent) Path(get()) else null },
+                    get("no.nav.test-postfix").run { if (isPresent) get() else "test" })
             }
     }
 }

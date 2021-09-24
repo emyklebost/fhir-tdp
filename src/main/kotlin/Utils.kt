@@ -2,24 +2,10 @@ package no.nav.helse
 
 import org.hl7.fhir.r5.model.OperationOutcome
 import org.hl7.fhir.r5.utils.ToolingExtensions
-import org.junit.platform.engine.EngineExecutionListener
-import org.junit.platform.engine.TestDescriptor
-import org.junit.platform.engine.TestExecutionResult
 
 typealias Severity = OperationOutcome.IssueSeverity
 typealias IssueType = OperationOutcome.IssueType
 typealias IssueComponent = OperationOutcome.OperationOutcomeIssueComponent
-
-// Inlined to tidy up the stack-trace of failed tests.
-inline fun EngineExecutionListener.scope(testDescriptor: TestDescriptor, execute: () -> Unit) {
-    try {
-        executionStarted(testDescriptor)
-        execute()
-        executionFinished(testDescriptor, TestExecutionResult.successful())
-    } catch (error: Throwable) {
-        executionFinished(testDescriptor, TestExecutionResult.failed(error))
-    }
-}
 
 fun IssueComponent.toData() = Specification.Issue(severity, code, expression.firstOrNull()?.asStringValue(), details.text)
 fun IssueComponent.sourceUrl() = getExtensionByUrl(ToolingExtensions.EXT_ISSUE_SOURCE)?.valueStringType?.value
