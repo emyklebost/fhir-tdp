@@ -68,13 +68,11 @@ private fun loadConfig(specPath: Path): Specification {
         }
     }
 
-    val testsWithResolvedSource = config.tests.map {
-        it.copy(source = resolveAndNormalize(it.source))
-    }
-
     return config.copy(
         validator = config.validator.copy(igs = resolvedIgs),
-        tests = testsWithResolvedSource
+        tests = config.tests.map {
+            it.copy(source = resolveAndNormalize(it.source))
+        }
     )
 }
 
