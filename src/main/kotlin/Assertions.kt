@@ -1,8 +1,5 @@
 package no.nav.helse
 
-import com.diogonunes.jcolor.Ansi.colorize
-import com.diogonunes.jcolor.Attribute.GREEN_TEXT
-import com.diogonunes.jcolor.Attribute.RED_TEXT
 import org.hl7.fhir.r5.model.OperationOutcome
 import org.opentest4j.AssertionFailedError
 
@@ -14,8 +11,8 @@ class UnexpectedIssue(val issue: Specification.Issue, val source: String?) : Ass
                 .filterNot { it.issue.severity in listOf(Severity.INFORMATION, Severity.WARNING) }
                 .filterNot { testCase.expectedIssues.any { expected -> expected.semanticallyEquals(it.issue) } }
 
-            val color = if (unexpectedErrorFailures.isEmpty()) GREEN_TEXT() else RED_TEXT()
-            println(colorize("  ${unexpectedErrorFailures.count()} unexpected error(s)!", color))
+            val f = if (unexpectedErrorFailures.isEmpty()) Theme.pass else Theme.fail
+            println(f.format("  ${unexpectedErrorFailures.count()} unexpected error(s)!"))
 
             return unexpectedErrorFailures
         }
@@ -32,8 +29,8 @@ class MissingIssue(val issue: Specification.Issue) : AssertionFailedError("Expec
                 .map { MissingIssue(it) }
 
             val foundCount = testCase.expectedIssues.count() - missingIssueFailures.count()
-            val color = if (foundCount == testCase.expectedIssues.count()) GREEN_TEXT() else RED_TEXT()
-            println(colorize("  Found $foundCount of ${testCase.expectedIssues.count()} expected issue(s)!", color))
+            val f = if (foundCount == testCase.expectedIssues.count()) Theme.pass else Theme.fail
+            println(f.format("  Found $foundCount of ${testCase.expectedIssues.count()} expected issue(s)!"))
 
             return missingIssueFailures
         }

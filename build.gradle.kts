@@ -20,7 +20,7 @@ tasks {
     }
 
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "11"
+        kotlinOptions.jvmTarget = "1.8"
     }
 
     shadowJar {
@@ -28,7 +28,7 @@ tasks {
             // These dependencies are already available in the junit-platform-console-standalone.jar
             // and validator_cli.jar, can therefore be omitted to reduce size.
             exclude(dependency("com.fasterxml.*::"))
-            exclude(dependency("org.junit.*::"))
+            exclude(dependency("org.jetbrains::"))
         }
     }
 
@@ -46,9 +46,9 @@ tasks {
 
 dependencies {
     compileOnly("ca.uhn.hapi.fhir:org.hl7.fhir.validation:5.5.3")
+    compileOnly("org.junit.platform:junit-platform-engine:1.8.0")
     implementation("com.sksamuel.hoplite:hoplite-json:1.4.7")
     implementation("com.sksamuel.hoplite:hoplite-yaml:1.4.7")
-    implementation("org.junit.platform:junit-platform-engine:1.8.0")
     implementation("com.diogonunes:JColor:5.0.1")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.0")
     testImplementation("org.junit.platform:junit-platform-testkit:1.8.0")

@@ -1,10 +1,5 @@
 package no.nav.helse
 
-import com.diogonunes.jcolor.Ansi.colorize
-import com.diogonunes.jcolor.Attribute.BLUE_TEXT
-import com.diogonunes.jcolor.Attribute.CYAN_TEXT
-import com.diogonunes.jcolor.Attribute.RED_TEXT
-import com.diogonunes.jcolor.Attribute.YELLOW_TEXT
 import org.hl7.fhir.r5.model.OperationOutcome
 import org.junit.platform.engine.EngineExecutionListener
 import org.junit.platform.engine.TestDescriptor
@@ -30,9 +25,9 @@ class TestCaseDescriptor(
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {
             val fileSource = (source.get() as FileSource)
-            println("> " + colorize("TEST: $displayName", CYAN_TEXT()))
+            println("> " + Theme.title.format("TEST: $displayName"))
             println("  Location: ${fileSource.toUrl()}")
-            if (tags.any()) { println(colorize("  Tags: ${tags.joinToString { it.name }}", YELLOW_TEXT())) }
+            if (tags.any()) { println(Theme.tags.format("  Tags: ${tags.joinToString { it.name }}")) }
 
             val specFile = fileSource.file.toPath()
             val resourcePath = specFile.resolveAndNormalize(Path(testCase.source))
@@ -84,11 +79,11 @@ private fun createSummary(outcome: OperationOutcome, failedAssertions: List<Asse
         toString()
     }
 
-private fun StringBuilder.append(mark: String, issue: Specification.Issue, source: String?, error: Boolean) {
-    val color = if (error) RED_TEXT() else BLUE_TEXT()
-    appendLine(colorize("  $mark. Source: $source", color))
-    appendLine(colorize("     Severity: ${issue.severity}", color))
-    appendLine(colorize("     Type: ${issue.type}", color))
-    appendLine(colorize("     Expression: ${issue.expression}", color))
-    appendLine(colorize("     Message: ${issue.message}", color))
+private fun StringBuilder.append(mark: String, issue: Specification.Issue, source: String?, fail: Boolean) {
+    val f = if (fail) Theme.fail else Theme.info
+    appendLine(f.format("  $mark. Source: $source"))
+    appendLine(f.format("     Severity: ${issue.severity}"))
+    appendLine(f.format("     Type: ${issue.type}"))
+    appendLine(f.format("     Expression: ${issue.expression}"))
+    appendLine(f.format("     Message: ${issue.message}"))
 }
