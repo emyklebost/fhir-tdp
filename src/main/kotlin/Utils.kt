@@ -41,12 +41,5 @@ fun Path.resolveAndNormalize(path: Path): Path {
     return dir.resolve(path).normalize()
 }
 
-fun Specification.Issue.semanticallyEquals(other: Specification.Issue): Boolean {
-    if (severity != other.severity) return false
-    if (type != null && type != other.type) return false
-    if (expression != null && !expression.contentEquals(other.expression, ignoreCase = true)) return false
-    return (message == null || (other.message?.contains(message, ignoreCase = true) == true))
-}
-
 fun IssueComponent.toData() = Specification.Issue(severity, code, expression.firstOrNull()?.asStringValue(), details.text)
 fun IssueComponent.sourceUrl() = getExtensionByUrl(ToolingExtensions.EXT_ISSUE_SOURCE)?.valueStringType?.value
