@@ -1,7 +1,11 @@
 package no.nav.helse
 
+import com.diogonunes.jcolor.Ansi.colorize
+import com.diogonunes.jcolor.Attribute.BLUE_TEXT
+import com.diogonunes.jcolor.Attribute.CYAN_TEXT
+import com.diogonunes.jcolor.Attribute.RED_TEXT
+import com.diogonunes.jcolor.Attribute.YELLOW_TEXT
 import org.hl7.fhir.r5.model.OperationOutcome
-import org.hl7.fhir.r5.utils.ToolingExtensions
 import org.junit.platform.engine.EngineExecutionListener
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.TestTag
@@ -26,15 +30,16 @@ class TestCaseDescriptor(
     fun execute(listener: EngineExecutionListener) =
         listener.scope(this) {
             val fileSource = (source.get() as FileSource)
-            println("> TEST: $displayName")
+            println("> " + colorize("TEST: $displayName", CYAN_TEXT()))
             println("  Location: ${fileSource.toUrl()}")
+            if (tags.any()) { println(colorize("  Tags: ${tags.joinToString { it.name }}", YELLOW_TEXT())) }
 
             val specFile = fileSource.file.toPath()
             val resourcePath = specFile.resolveAndNormalize(Path(testCase.source))
             val outcome = validator.validate(resourcePath, testCase.profile)
 
-            val failures = testForUnexpectedErrors(testCase, outcome) + testForMissingExpectedIssues(testCase, outcome)
-            println(createSummary(outcome))
+            val failures = UnexpectedIssue.test(testCase, outcome) + MissingIssue.test(testCase, outcome)
+            println(createSummary(outcome, failures))
 
             if (failures.any()) {
                 listener.reportingEntryPublished(this, createReportEntry(testCase, specFile))
@@ -43,68 +48,47 @@ class TestCaseDescriptor(
         }
 }
 
-private fun testForUnexpectedErrors(testCase: Specification.TestCase, outcome: OperationOutcome): List<AssertionFailedError> {
-    val unexpectedErrorFailures = outcome.issue
-        .map { Pair(it.toData(), it.sourceUrl()) }
-        .filterNot { it.first.severity in listOf(Severity.INFORMATION, Severity.WARNING) }
-        .filterNot { testCase.expectedIssues.any { expected -> expected.semanticallyEquals(it.first) } }
-        .map { AssertionFailedError("Unexpected ${it.first} at ${it.second}") }
-
-    println("  ${unexpectedErrorFailures.count()} unexpected error(s)!")
-
-    return unexpectedErrorFailures
-}
-
-private fun testForMissingExpectedIssues(testCase: Specification.TestCase, outcome: OperationOutcome): List<AssertionFailedError> {
-    val issues = outcome.issue.map { it.toData() }
-
-    val missingIssueFailures = testCase.expectedIssues
-        .filterNot { expected -> issues.any { expected.semanticallyEquals(it) } }
-        .map { AssertionFailedError("Expected issue was not found: $it.") }
-
-    val foundCount = testCase.expectedIssues.count() - missingIssueFailures.count()
-    println("  Found $foundCount of ${testCase.expectedIssues.count()} expected issue(s)!")
-
-    return missingIssueFailures
-}
-
-private fun IssueComponent.toData() = Specification.Issue(severity, code, expression.firstOrNull()?.asStringValue(), details.text)
-private fun IssueComponent.sourceUrl() = getExtensionByUrl(ToolingExtensions.EXT_ISSUE_SOURCE)?.valueStringType?.value
 private fun FileSource.toUrl() = "${file.toPath().toUri()}:${position.get().line}:${position.get().column.get()}"
-
-private fun Specification.Issue.semanticallyEquals(other: Specification.Issue): Boolean {
-    if (severity != other.severity) return false
-    if (type != null && type != other.type) return false
-    if (expression != null && !expression.contentEquals(other.expression, ignoreCase = true)) return false
-    return (message == null || (other.message?.contains(message, ignoreCase = true) == true))
-}
 
 private fun createReportEntry(testCase: Specification.TestCase, specFile: Path) =
     testCase.run {
         val values = mapOf(
             Pair(Specification.TestCase::source.name, "${specFile.resolveAndNormalize(Path(source)).toUri()}"),
-            Pair(Specification.TestCase::profile.name, profile),
+            Pair(Specification.TestCase::profile.name, profile ?: "core"),
             Pair("${Specification.TestCase::expectedIssues.name}Count", "${expectedIssues.count()}")
         )
 
         ReportEntry.from(values)
     }
 
-private fun createSummary(outcome: OperationOutcome) =
+private fun createSummary(outcome: OperationOutcome, failedAssertions: List<AssertionFailedError>) =
     StringBuilder().run {
         val errors = outcome.issue.count { it.severity in listOf(Severity.ERROR, Severity.FATAL) }
         val warnings = outcome.issue.count { it.severity == Severity.WARNING }
         val infos = outcome.issue.count { it.severity == Severity.INFORMATION }
 
         appendLine("  Finished: $errors errors, $warnings warnings, $infos notes")
+
+        val unexpectedIssues = failedAssertions.mapNotNull { (it as? UnexpectedIssue)?.issue }
+        val missingIssues = failedAssertions.mapNotNull { (it as? MissingIssue)?.issue }
+
         outcome.issue.forEachIndexed { i, it ->
             val issue = it.toData()
-            appendLine("  ${i + 1}. Source: ${it.sourceUrl()}")
-            appendLine("     Severity: ${issue.severity}")
-            appendLine("     Type: ${issue.type}")
-            appendLine("     Expression: ${issue.expression}")
-            appendLine("     Message: ${issue.message}")
+            append("${i + 1}", issue, it.sourceUrl(), unexpectedIssues.any { mi -> mi.semanticallyEquals(issue) })
+        }
+
+        missingIssues.forEach {
+            append("X", it, "N/A", true)
         }
 
         toString()
     }
+
+private fun StringBuilder.append(mark: String, issue: Specification.Issue, source: String?, error: Boolean) {
+    val color = if (error) RED_TEXT() else BLUE_TEXT()
+    appendLine(colorize("  $mark. Source: $source", color))
+    appendLine(colorize("     Severity: ${issue.severity}", color))
+    appendLine(colorize("     Type: ${issue.type}", color))
+    appendLine(colorize("     Expression: ${issue.expression}", color))
+    appendLine(colorize("     Message: ${issue.message}", color))
+}
