@@ -1,5 +1,6 @@
 package no.nav.helse
 
+import org.junit.platform.engine.ConfigurationParameters
 import org.junit.platform.engine.EngineDiscoveryRequest
 import org.junit.platform.engine.ExecutionRequest
 import org.junit.platform.engine.TestDescriptor
@@ -8,6 +9,8 @@ import org.junit.platform.engine.UniqueId
 import org.junit.platform.engine.discovery.DirectorySelector
 import org.junit.platform.engine.discovery.FileSelector
 import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.io.path.name
 import kotlin.streams.asSequence
 
@@ -16,10 +19,12 @@ class FhirValidatorTestEngine : TestEngine {
 
     override fun discover(discoveryRequest: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor {
         val specFiles = discoveryRequest.run {
-            val fileExt = listOf("test.json", "test.yml", "test.yaml")
+            val config = Config.create(configurationParameters)
+            val fileExt = listOf("json", "yml", "yaml").map { "${config.postfix}.$it" }
 
             val files = getSelectorsByType(DirectorySelector::class.java)
                 .map { it.path }
+                .plus(listOfNotNull(config.selectDirectory))
                 .flatMap { Files.walk(it).asSequence() }
                 .filter { fileExt.any { ext -> it.name.endsWith(ext, ignoreCase = true) } }
 
@@ -40,5 +45,24 @@ class FhirValidatorTestEngine : TestEngine {
                 .mapNotNull { it as? TestSuiteDescriptor }
                 .forEach { it.execute(listener) }
         }
+    }
+}
+
+// See https://junit.org/junit5/docs/current/user-guide/#running-tests-config-params
+private data class Config(
+    val selectDirectory: Path?,
+    val postfix: String,
+) {
+    companion object {
+        fun create(params: ConfigurationParameters) =
+            params.run {
+                val dir = get("no.nav.select-directory")
+                    .run { if (isPresent) Path(get()) else null }
+
+                val postfix = get("no.nav.test-postfix")
+                    .run { if (isPresent) get() else "test" }
+
+                Config(dir, postfix)
+            }
     }
 }
