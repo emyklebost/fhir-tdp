@@ -1,4 +1,4 @@
-import no.nav.helse.FhirValidatorTestEngine
+import no.nav.FhirValidatorTestEngine
 import org.junit.jupiter.api.Test
 import org.junit.platform.engine.discovery.DiscoverySelectors.selectDirectory
 import org.junit.platform.engine.discovery.DiscoverySelectors.selectFile

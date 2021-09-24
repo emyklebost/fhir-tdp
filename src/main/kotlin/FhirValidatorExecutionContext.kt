@@ -1,4 +1,4 @@
-package no.nav.helse
+package no.nav
 
 import org.junit.platform.engine.EngineExecutionListener
 import org.junit.platform.engine.support.hierarchical.EngineExecutionContext

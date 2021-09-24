@@ -1,4 +1,4 @@
-package no.nav.helse
+package no.nav
 
 // Inspired by: https://github.com/junit-team/junit5/blob/main/junit-platform-console/src/main/java/org/junit/platform/console/tasks/Color.java
 enum class Color(private val ansiCode: Int) {

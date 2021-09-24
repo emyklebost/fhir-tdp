@@ -1,4 +1,4 @@
-package no.nav.helse
+package no.nav
 
 import org.junit.platform.engine.ConfigurationParameters
 import org.junit.platform.engine.EngineDiscoveryRequest
@@ -15,7 +15,8 @@ import kotlin.io.path.name
 import kotlin.streams.asSequence
 
 class FhirValidatorTestEngine : HierarchicalTestEngine<FhirValidatorExecutionContext>() {
-    override fun getId() = "fhir-validator"
+    // See https://junit.org/junit5/docs/current/user-guide/#launcher-api-engines-custom
+    override fun getId() = "fhir-validator-junit"
 
     override fun discover(discoveryRequest: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor {
         val specFiles = discoveryRequest.run {

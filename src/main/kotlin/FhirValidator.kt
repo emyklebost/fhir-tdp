@@ -1,4 +1,4 @@
-package no.nav.helse
+package no.nav
 
 import org.hl7.fhir.r5.model.ImplementationGuide
 import org.hl7.fhir.r5.model.OperationOutcome

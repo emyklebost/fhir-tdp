@@ -1,4 +1,4 @@
-package no.nav.helse
+package no.nav
 
 import java.nio.file.Path
 

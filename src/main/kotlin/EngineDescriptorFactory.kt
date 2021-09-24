@@ -1,4 +1,4 @@
-package no.nav.helse
+package no.nav
 
 import com.sksamuel.hoplite.ConfigLoader
 import com.sksamuel.hoplite.json.JsonParser

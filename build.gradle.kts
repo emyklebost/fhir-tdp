@@ -7,7 +7,7 @@ plugins {
     `java-library`
 }
 
-group = "no.nav.helse"
+group = "no.nav"
 version = "0.1.0"
 
 repositories {
@@ -24,6 +24,7 @@ tasks {
     }
 
     shadowJar {
+        archiveClassifier.set("")
         dependencies {
             // These dependencies are already available in the junit-platform-console-standalone.jar
             // and validator_cli.jar, can therefore be omitted to reduce size.
