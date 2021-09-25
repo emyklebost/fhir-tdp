@@ -26,10 +26,8 @@ tasks {
     shadowJar {
         archiveClassifier.set("")
         dependencies {
-            // These dependencies are already available in the junit-platform-console-standalone.jar
-            // and validator_cli.jar, can therefore be omitted to reduce size.
+            // Already available in validator_cli.jar and can therefore be omitted to reduce size.
             exclude(dependency("com.fasterxml.*::"))
-            exclude(dependency("org.jetbrains::"))
         }
     }
 
