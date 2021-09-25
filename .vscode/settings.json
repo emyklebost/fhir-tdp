@@ -1,7 +1,7 @@
 {
     "json.schemas": [
         {
-            // The schema provides IntelliSense when editing json files containing fhir resources (e.g. StructureDefinition). 
+            // The schema provides IntelliSense when editing json files containing fhir resources (e.g. StructureDefinition).
             "fileMatch": [
                 "src/test/resources/fhir-instances/*.json",
                 "src/test/resources/fhir-profiles/*.json",
@@ -9,11 +9,11 @@
             "url": "https://www.hl7.org/fhir/fhir.schema.json"
         },
         {
-            // The schema provides IntelliSense when editing test specification files 
+            // The schema provides IntelliSense when editing test specification files
             "fileMatch": [
                 "src/test/**/*.test.json",
             ],
-            "url": "./tests.schema.json"
+            "url": "./test-specification.schema.json"
         }
     ],
     "editor.tabSize": 2,

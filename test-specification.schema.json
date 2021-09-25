@@ -164,7 +164,7 @@
                   ]
                 },
                 "expression": {
-                  "description": "[Optional] FHIRPath to the element within the FHIR resource expected to containing the error.",
+                  "description": "[Optional] FHIRPath to the element within the FHIR resource expected to containing the error, see: https://www.hl7.org/fhir/operationoutcome.html#loc.",
                   "type": "string"
                 },
                 "message": {
