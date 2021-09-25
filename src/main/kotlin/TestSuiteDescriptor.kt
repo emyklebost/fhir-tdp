@@ -3,6 +3,7 @@ package no.nav
 import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.TestSource
 import org.junit.platform.engine.UniqueId
+import org.junit.platform.engine.reporting.ReportEntry
 import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.support.hierarchical.Node
 
@@ -15,7 +16,25 @@ class TestSuiteDescriptor(
     override fun execute(
         context: FhirValidatorExecutionContext,
         dynamicTestExecutor: Node.DynamicTestExecutor
-    ) = context.copy(validator = FhirValidator.create(spec.validator)).apply {
-        println() // Empty line for readability
+    ) = try {
+        context.copy(validator = FhirValidator.create(spec.validator)).apply {
+            println() // Empty line for log readability.
+        }
+    } catch (ex: Throwable) {
+        context.listener.reportingEntryPublished(this, createReportEntry(spec.validator))
+        throw ex
     }
 }
+
+private fun createReportEntry(spec: Specification.Validator) =
+    spec.run {
+        val values = mapOf(
+            Pair(Specification.Validator::version.name, version),
+            Pair(Specification.Validator::terminologyService.name, terminologyService),
+            Pair(Specification.Validator::terminologyServiceLog.name, terminologyServiceLog),
+            Pair(Specification.Validator::snomedCtEdition.name, snomedCtEdition),
+            Pair(Specification.Validator::igs.name, if (igs.isEmpty()) null else igs.joinToString())
+        ).filterValues { it != null }
+
+        ReportEntry.from(values)
+    }

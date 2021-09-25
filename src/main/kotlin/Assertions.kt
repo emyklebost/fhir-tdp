@@ -3,13 +3,13 @@ package no.nav
 import org.hl7.fhir.r5.model.OperationOutcome
 import org.opentest4j.AssertionFailedError
 
-class UnexpectedIssue(val issue: Specification.Issue, val source: String?) : AssertionFailedError("Unexpected $issue at $source") {
+class UnexpectedIssue(val issueSpec: Specification.Issue, val source: String?) : AssertionFailedError("Unexpected $issueSpec at $source") {
     companion object {
         fun test(testCase: Specification.TestCase, outcome: OperationOutcome): List<UnexpectedIssue> {
             val unexpectedErrorFailures = outcome.issue
                 .map { UnexpectedIssue(it.toData(), it.sourceUrl()) }
-                .filterNot { it.issue.severity in listOf(Severity.INFORMATION, Severity.WARNING) }
-                .filterNot { testCase.expectedIssues.any { expected -> expected.semanticallyEquals(it.issue) } }
+                .filterNot { it.issueSpec.severity in listOf(Severity.INFORMATION, Severity.WARNING) }
+                .filterNot { testCase.expectedIssues.any { expected -> expected.semanticallyEquals(it.issueSpec) } }
 
             val color = if (unexpectedErrorFailures.isEmpty()) Color.SUCCESSFUL else Color.FAILED
             println(color.paint("  ${unexpectedErrorFailures.count()} unexpected error(s)!"))
@@ -19,7 +19,7 @@ class UnexpectedIssue(val issue: Specification.Issue, val source: String?) : Ass
     }
 }
 
-class MissingIssue(val issue: Specification.Issue) : AssertionFailedError("Expected issue was not found: $issue.") {
+class MissingIssue(val issueSpec: Specification.Issue) : AssertionFailedError("Expected issue was not found: $issueSpec.") {
     companion object {
         fun test(testCase: Specification.TestCase, outcome: OperationOutcome): List<MissingIssue> {
             val issues = outcome.issue.map { it.toData() }

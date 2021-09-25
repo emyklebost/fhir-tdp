@@ -44,8 +44,8 @@ class TestCaseDescriptor(
 
 private fun FileSource.toUrl() = "${file.toPath().toUri()}:${position.get().line}:${position.get().column.get()}"
 
-private fun createReportEntry(testCase: Specification.TestCase) =
-    testCase.run {
+private fun createReportEntry(spec: Specification.TestCase) =
+    spec.run {
         val values = mapOf(
             Pair(Specification.TestCase::source.name, "${source.toUri()}"),
             Pair(Specification.TestCase::profile.name, profile ?: "core"),
@@ -63,8 +63,8 @@ private fun createSummary(outcome: OperationOutcome, failedAssertions: List<Asse
 
         appendLine("  Finished: $errors errors, $warnings warnings, $infos notes")
 
-        val unexpectedIssues = failedAssertions.mapNotNull { (it as? UnexpectedIssue)?.issue }
-        val missingIssues = failedAssertions.mapNotNull { (it as? MissingIssue)?.issue }
+        val unexpectedIssues = failedAssertions.mapNotNull { (it as? UnexpectedIssue)?.issueSpec }
+        val missingIssues = failedAssertions.mapNotNull { (it as? MissingIssue)?.issueSpec }
 
         outcome.issue.forEachIndexed { i, it ->
             val issue = it.toData()
@@ -78,11 +78,11 @@ private fun createSummary(outcome: OperationOutcome, failedAssertions: List<Asse
         toString()
     }
 
-private fun StringBuilder.append(mark: String, issue: Specification.Issue, source: String?, fail: Boolean) {
+private fun StringBuilder.append(mark: String, issueSpec: Specification.Issue, source: String?, fail: Boolean) {
     val color = if (fail) Color.FAILED else Color.INFO
     appendLine(color.paint("  $mark. Source: $source"))
-    appendLine(color.paint("     Severity: ${issue.severity}"))
-    appendLine(color.paint("     Type: ${issue.type}"))
-    appendLine(color.paint("     Expression: ${issue.expression}"))
-    appendLine(color.paint("     Message: ${issue.message}"))
+    appendLine(color.paint("     Severity: ${issueSpec.severity}"))
+    appendLine(color.paint("     Type: ${issueSpec.type}"))
+    appendLine(color.paint("     Expression: ${issueSpec.expression}"))
+    appendLine(color.paint("     Message: ${issueSpec.message}"))
 }

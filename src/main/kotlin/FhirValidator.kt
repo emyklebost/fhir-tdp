@@ -26,9 +26,9 @@ class FhirValidator(private val validationEngine: ValidationEngine) {
         private val service = ValidationService()
         private val cache = ConcurrentHashMap<Specification.Validator, FhirValidator>()
 
-        fun create(config: Specification.Validator): FhirValidator {
-            return cache.getOrPut(config) {
-                val ctx = config.toCLIContext()
+        fun create(spec: Specification.Validator): FhirValidator {
+            return cache.getOrPut(spec) {
+                val ctx = spec.toCLIContext()
                 if (ctx.sv == null) ctx.sv = service.determineVersion(ctx)
 
                 val packageName = VersionUtilities.packageForVersion(ctx.sv)
@@ -82,11 +82,11 @@ private fun Specification.Validator.toCLIContext(): CliContext {
 
     args.add(Params.STRICT_EXTENSIONS)
     args.addAll(listOf(Params.QUESTIONNAIRE, QuestionnaireMode.REQUIRED.name))
+    args.addAll(listOf(Params.TERMINOLOGY, terminologyService ?: "n/a"))
 
     igs.forEach { args.addAll(listOf(Params.IMPLEMENTATION_GUIDE, it)) }
     version?.let { args.addAll(listOf(Params.VERSION, it)) }
     snomedCtEdition?.let { args.addAll(listOf(Params.SCT, it)) }
-    terminologyService?.let { args.addAll(listOf(Params.TERMINOLOGY, it)) }
     terminologyServiceLog?.let { args.addAll(listOf(Params.TERMINOLOGY_LOG, it)) }
 
     return Params.loadCliContext(args.toTypedArray())
