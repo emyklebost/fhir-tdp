@@ -27,7 +27,6 @@ class TestCaseDescriptor(
         print(createHeader())
 
         val outcome = context.validator!!.validate(spec.source, spec.profile)
-
         val failures = UnexpectedIssue.test(spec, outcome) + MissingIssue.test(spec, outcome)
         println(createSummary(outcome, failures))
 
