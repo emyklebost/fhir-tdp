@@ -26,7 +26,7 @@
         },
         "terminologyService": {
           "type": "string",
-          "description": "[Optional] The (base) url of a FHIR terminology service. The default is to not use a terminology service.",
+          "description": "[Optional] The (base) URL of a FHIR terminology service. The default is to not use a terminology service.",
           "default": "n/a",
           "examples": [
             "http://tx.fhir.org"
@@ -57,7 +57,7 @@
         },
         "igs": {
           "type": "array",
-          "description": "[Optional] IGs or profile definitions to load. Can be file, folder, URL or package ([id]#[ver]) of an implementation guide. The base profiles will always be loaded.",
+          "description": "[Optional] IGs or profile definitions to load. Can be file, folder, URL or package ([id]#[ver]) of an implementation guide. The core profiles will always be loaded.",
           "uniqueItems": true,
           "items": {
             "type": "string",
@@ -90,7 +90,7 @@
             "type": "string"
           },
           "profile": {
-            "description": "[Optional] Canonical URL of the Profile the resources should conform to. If this is left empty the value of Resource.meta.profile will be used, if this also is empty the base profile is used.",
+            "description": "[Optional] Canonical URL of the Profile the resources should conform to. If this is left empty the value of Resource.meta.profile will be used, if this also is empty the core profile is used.",
             "type": "string",
             "format": "uri"
           },
@@ -119,10 +119,49 @@
               ],
               "properties": {
                 "severity": {
-                  "$ref": "#/$defs/severity"
+                  "description": "[Required] The expected severity of the issue, see: https://www.hl7.org/fhir/valueset-issue-severity.html",
+                  "enum": [
+                    "FATAL",
+                    "ERROR",
+                    "WARNING",
+                    "INFORMATION"
+                  ]
                 },
                 "type": {
-                  "$ref": "#/$defs/type"
+                  "description": "[Optional] The expected type of issue, see: https://www.hl7.org/fhir/valueset-issue-type.html",
+                  "enum": [
+                    "INVALID",
+                    "STRUCTURE",
+                    "REQUIRED",
+                    "VALUE",
+                    "INVARIANT",
+                    "SECURITY",
+                    "LOGIN",
+                    "UNKNOWN",
+                    "EXPIRED",
+                    "FORBIDDEN",
+                    "SUPPRESSED",
+                    "PROCESSING",
+                    "NOTSUPPORTED",
+                    "DUPLICATE",
+                    "MULTIPLEMATCHES",
+                    "NOTFOUND",
+                    "DELETED",
+                    "TOOLONG",
+                    "CODEINVALID",
+                    "EXTENSION",
+                    "TOOCOSTLY",
+                    "BUSINESSRULE",
+                    "CONFLICT",
+                    "TRANSIENT",
+                    "LOCKERROR",
+                    "NOSTORE",
+                    "EXCEPTION",
+                    "TIMEOUT",
+                    "INCOMPLETE",
+                    "THROTTLED",
+                    "INFORMATIONAL"
+                  ]
                 },
                 "expression": {
                   "description": "[Optional] FHIRPath to the element within the FHIR resource expected to containing the error.",
@@ -137,53 +176,6 @@
           }
         }
       }
-    }
-  },
-  "$defs": {
-    "severity": {
-      "description": "[Required] The expected severity of the issue, see: https://www.hl7.org/fhir/valueset-issue-severity.html",
-      "enum": [
-        "FATAL",
-        "ERROR",
-        "WARNING",
-        "INFORMATION"
-      ]
-    },
-    "type": {
-      "description": "[Optional] The expected type of issue, see: https://www.hl7.org/fhir/valueset-issue-type.html",
-      "enum": [
-        "INVALID",
-        "STRUCTURE",
-        "REQUIRED",
-        "VALUE",
-        "INVARIANT",
-        "SECURITY",
-        "LOGIN",
-        "UNKNOWN",
-        "EXPIRED",
-        "FORBIDDEN",
-        "SUPPRESSED",
-        "PROCESSING",
-        "NOTSUPPORTED",
-        "DUPLICATE",
-        "MULTIPLEMATCHES",
-        "NOTFOUND",
-        "DELETED",
-        "TOOLONG",
-        "CODEINVALID",
-        "EXTENSION",
-        "TOOCOSTLY",
-        "BUSINESSRULE",
-        "CONFLICT",
-        "TRANSIENT",
-        "LOCKERROR",
-        "NOSTORE",
-        "EXCEPTION",
-        "TIMEOUT",
-        "INCOMPLETE",
-        "THROTTLED",
-        "INFORMATIONAL"
-      ]
     }
   }
 }
