@@ -24,9 +24,7 @@ class TestCaseDescriptor(
         context: FhirValidatorExecutionContext,
         dynamicTestExecutor: Node.DynamicTestExecutor
     ): FhirValidatorExecutionContext {
-        println(Color.TITLE.paint("> TEST: $displayName"))
-        println("  Location: ${(source.get() as FileSource).toUrl()}")
-        if (tags.any()) { println(Color.TAGS.paint("  Tags: ${tags.joinToString { it.name }}")) }
+        print(createHeader())
 
         val outcome = context.validator!!.validate(spec.source, spec.profile)
 
@@ -40,6 +38,14 @@ class TestCaseDescriptor(
 
         return context
     }
+
+    private fun createHeader() =
+        StringBuilder().apply {
+            appendLine(Color.TITLE.paint("> TEST: $displayName"))
+            appendLine("  Location: ${(source.get() as FileSource).toUrl()}")
+            if (tags.any()) { appendLine(Color.TAGS.paint("  Tags: ${tags.joinToString { it.name }}")) }
+            toString()
+        }
 }
 
 private fun FileSource.toUrl() = "${file.toPath().toUri()}:${position.get().line}:${position.get().column.get()}"
