@@ -3,35 +3,31 @@ package no.nav
 import com.sksamuel.hoplite.ConfigLoader
 import com.sksamuel.hoplite.json.JsonParser
 import com.sksamuel.hoplite.yaml.YamlParser
-import org.junit.platform.engine.TestDescriptor
 import org.junit.platform.engine.UniqueId
-import org.junit.platform.engine.support.descriptor.AbstractTestDescriptor
 import org.junit.platform.engine.support.descriptor.EngineDescriptor
 import org.junit.platform.engine.support.descriptor.FilePosition
 import org.junit.platform.engine.support.descriptor.FileSource
-import org.junit.platform.engine.support.hierarchical.Node
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.forEachLine
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
+import kotlin.io.path.nameWithoutExtension
 
 object EngineDescriptorFactory {
     fun create(engineId: UniqueId, specFiles: List<Path>): EngineDescriptor {
         val engineDesc = EngineDescriptor(engineId, "FHIR Validator")
 
         specFiles.forEachIndexed { tsIndex, path ->
-            val spec = loadConfig(path)
-            val validator = FhirValidator.create(spec.validator)
-
             val testSuiteId = engineId.append<TestSuiteDescriptor>("$tsIndex")
+            val testSuiteSpec = loadConfig(path).run { copy(name = name ?: path.nameWithoutExtension) }
             val testSuiteSource = FileSource.from(path.toFile())
-            val testSuiteDesc = TestSuiteDescriptor(testSuiteId, spec.name ?: path.name, testSuiteSource)
+            val testSuiteDesc = TestSuiteDescriptor(testSuiteId, testSuiteSpec, testSuiteSource)
 
-            spec.tests.forEachIndexed { tcIndex, testCase ->
+            testSuiteSpec.tests.forEachIndexed { tcIndex, testCaseSpec ->
                 val testCaseId = testSuiteId.append<TestCaseDescriptor>("$tcIndex")
                 val testCaseSource = createFileSource(path, tcIndex)
-                val testCaseDesc = TestCaseDescriptor(testCaseId, testCase, validator, testCaseSource)
+                val testCaseDesc = TestCaseDescriptor(testCaseId, testCaseSpec, testCaseSource)
                 testSuiteDesc.addChild(testCaseDesc)
             }
 
@@ -99,9 +95,4 @@ private fun createFileSource(specPath: Path, testIndex: Int): FileSource {
     val pattern = if (specPath.name.endsWith(".json")) "\"source\"" else "[ {]source: "
     val filePosition = findAllMatches(Regex(pattern)).elementAtOrNull(testIndex)
     return FileSource.from(specPath.toFile(), filePosition)
-}
-
-private class TestSuiteDescriptor(id: UniqueId, name: String, source: FileSource) :
-    AbstractTestDescriptor(id, name, source), Node<FhirValidatorExecutionContext> {
-    override fun getType() = TestDescriptor.Type.CONTAINER
 }

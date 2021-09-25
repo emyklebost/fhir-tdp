@@ -46,7 +46,8 @@ private data class Config(val selectDirectory: Path?, val postfix: String) {
             params.run {
                 Config(
                     get("no.nav.select-directory").run { if (isPresent) Path(get()) else null },
-                    get("no.nav.test-postfix").run { if (isPresent) get() else "test" })
+                    get("no.nav.test-postfix").run { if (isPresent) get() else "test" }
+                )
             }
     }
 }

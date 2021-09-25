@@ -24,7 +24,7 @@ tasks {
     }
 
     shadowJar {
-        archiveClassifier.set("")
+        archiveClassifier.set("") // Removes the '.all' postfix from the file.
         dependencies {
             // Already available in validator_cli.jar and can therefore be omitted to reduce size.
             exclude(dependency("com.fasterxml.*::"))

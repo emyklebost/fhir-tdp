@@ -14,28 +14,27 @@ import kotlin.io.path.nameWithoutExtension
 
 class TestCaseDescriptor(
     id: UniqueId,
-    private val testCase: Specification.TestCase,
-    private val validator: FhirValidator,
+    private val spec: Specification.TestCase,
     source: FileSource,
-) : AbstractTestDescriptor(id, testCase.name ?: testCase.source.nameWithoutExtension, source),
+) : AbstractTestDescriptor(id, spec.name ?: spec.source.nameWithoutExtension, source),
     Node<FhirValidatorExecutionContext> {
     override fun getType() = TestDescriptor.Type.TEST
-    override fun getTags() = testCase.tags.map(TestTag::create).toSet()
+    override fun getTags() = spec.tags.map(TestTag::create).toSet()
     override fun execute(
         context: FhirValidatorExecutionContext,
-        dynamicTestExecutor: Node.DynamicTestExecutor?
+        dynamicTestExecutor: Node.DynamicTestExecutor
     ): FhirValidatorExecutionContext {
         println("> " + Color.TITLE.paint("TEST: $displayName"))
         println("  Location: ${(source.get() as FileSource).toUrl()}")
         if (tags.any()) { println(Color.TAGS.paint("  Tags: ${tags.joinToString { it.name }}")) }
 
-        val outcome = validator.validate(testCase.source, testCase.profile)
+        val outcome = context.validator!!.validate(spec.source, spec.profile)
 
-        val failures = UnexpectedIssue.test(testCase, outcome) + MissingIssue.test(testCase, outcome)
+        val failures = UnexpectedIssue.test(spec, outcome) + MissingIssue.test(spec, outcome)
         println(createSummary(outcome, failures))
 
         if (failures.any()) {
-            context.listener.reportingEntryPublished(this, createReportEntry(testCase))
+            context.listener.reportingEntryPublished(this, createReportEntry(spec))
             throw if (failures.count() == 1) failures.single() else MultipleFailuresError(null, failures)
         }
 
