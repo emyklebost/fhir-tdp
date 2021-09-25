@@ -29,8 +29,6 @@ class FhirValidator(private val validationEngine: ValidationEngine) {
         fun create(config: Specification.Validator): FhirValidator {
             return cache.getOrPut(config) {
                 val ctx = config.toCLIContext()
-
-                // Must use good-old if-check because for some reason the Elvis operator doesn't work here.
                 if (ctx.sv == null) ctx.sv = service.determineVersion(ctx)
 
                 val packageName = VersionUtilities.packageForVersion(ctx.sv)
