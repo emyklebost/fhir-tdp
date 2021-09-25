@@ -8,7 +8,7 @@ class UnexpectedIssue(val issueSpec: Specification.Issue, val source: String?) :
         fun test(testCase: Specification.TestCase, outcome: OperationOutcome): List<UnexpectedIssue> {
             val unexpectedErrorFailures = outcome.issue
                 .map { UnexpectedIssue(it.toData(), it.sourceUrl()) }
-                .filterNot { it.issueSpec.severity in listOf(Severity.INFORMATION, Severity.WARNING) }
+                .filter { it.issueSpec.severity.failure() }
                 .filterNot { testCase.expectedIssues.any { expected -> expected.semanticallyEquals(it.issueSpec) } }
 
             val color = if (unexpectedErrorFailures.isEmpty()) Color.SUCCESSFUL else Color.FAILED

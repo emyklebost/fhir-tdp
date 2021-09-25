@@ -57,7 +57,7 @@ private fun createReportEntry(spec: Specification.TestCase) =
 
 private fun createSummary(outcome: OperationOutcome, failedAssertions: List<AssertionFailedError>) =
     StringBuilder().run {
-        val errors = outcome.issue.count { it.severity in listOf(Severity.ERROR, Severity.FATAL) }
+        val errors = outcome.issue.count { it.severity.failure() }
         val warnings = outcome.issue.count { it.severity == Severity.WARNING }
         val infos = outcome.issue.count { it.severity == Severity.INFORMATION }
 
@@ -70,7 +70,7 @@ private fun createSummary(outcome: OperationOutcome, failedAssertions: List<Asse
             val issue = it.toData()
             val color =
                 if (unexpectedIssues.any { mi -> mi.semanticallyEquals(issue) }) Color.FAILED
-                else if (issue.severity in listOf(Severity.INFORMATION, Severity.WARNING)) Color.INFO
+                else if (!issue.severity.failure()) Color.INFO
                 else Color.SUCCESSFUL
 
             append("${i + 1}", issue, it.sourceUrl(), color)

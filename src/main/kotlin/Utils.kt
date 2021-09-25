@@ -9,3 +9,4 @@ typealias IssueComponent = OperationOutcome.OperationOutcomeIssueComponent
 
 fun IssueComponent.toData() = Specification.Issue(severity, code, expression.firstOrNull()?.asStringValue(), details.text)
 fun IssueComponent.sourceUrl() = getExtensionByUrl(ToolingExtensions.EXT_ISSUE_SOURCE)?.valueStringType?.value
+fun Severity.failure() = this in listOf(Severity.FATAL, Severity.ERROR)
