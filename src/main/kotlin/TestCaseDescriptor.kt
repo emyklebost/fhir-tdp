@@ -16,7 +16,7 @@ class TestCaseDescriptor(
     id: UniqueId,
     private val spec: Specification.TestCase,
     source: FileSource,
-) : AbstractTestDescriptor(id, spec.name ?: spec.source.nameWithoutExtension, source),
+) : AbstractTestDescriptor(id, spec.title ?: spec.source.nameWithoutExtension, source),
     Node<FhirValidatorExecutionContext> {
     override fun getType() = TestDescriptor.Type.TEST
     override fun getTags() = spec.tags.map(TestTag::create).toSet()
@@ -47,9 +47,9 @@ private fun FileSource.toUrl() = "${file.toPath().toUri()}:${position.get().line
 private fun createReportEntry(spec: Specification.TestCase) =
     spec.run {
         val values = mapOf(
-            Pair(Specification.TestCase::source.name, "${source.toUri()}"),
-            Pair(Specification.TestCase::profile.name, profile ?: "core"),
-            Pair("${Specification.TestCase::expectedIssues.name}Count", "${expectedIssues.count()}")
+            Pair("source", "${source.toUri()}"),
+            Pair("profile", profile ?: "core"),
+            Pair("expectedIssueCount", "${expectedIssues.count()}")
         )
 
         ReportEntry.from(values)

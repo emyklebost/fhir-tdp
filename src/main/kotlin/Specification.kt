@@ -3,13 +3,13 @@ package no.nav
 import java.nio.file.Path
 
 data class Specification(
-    val name: String?,
+    val title: String?,
     val validator: Validator = Validator(),
     val tests: List<TestCase> = emptyList()
 ) {
     data class TestCase(
         val source: Path,
-        val name: String?,
+        val title: String?,
         val profile: String?,
         val expectedIssues: List<Issue> = emptyList(),
         val tags: List<String> = emptyList()

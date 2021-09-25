@@ -20,7 +20,7 @@ object EngineDescriptorFactory {
 
         specFiles.forEachIndexed { tsIndex, path ->
             val testSuiteId = engineId.append<TestSuiteDescriptor>("$tsIndex")
-            val testSuiteSpec = loadConfig(path).run { copy(name = name ?: path.nameWithoutExtension) }
+            val testSuiteSpec = loadConfig(path).run { copy(title = title ?: path.nameWithoutExtension) }
             val testSuiteSource = FileSource.from(path.toFile())
             val testSuiteDesc = TestSuiteDescriptor(testSuiteId, testSuiteSpec, testSuiteSource)
 

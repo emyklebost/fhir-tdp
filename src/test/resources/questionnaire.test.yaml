@@ -1,12 +1,12 @@
 ---
-name: "Questionnaire tests"
+title: "Questionnaire tests"
 validator:
   version: '4.0'
   "igs": [
       "fhir-profiles"
   ]
 tests:
-  - name: "Expecting 2 errors and finds 2"
+  - title: "Expecting 2 errors and finds 2"
     source: "fhir-instances/questionnaireResponse-instance.json"
     expectedIssues:
       - severity: ERROR
@@ -16,7 +16,7 @@ tests:
       - severity: ERROR
         message: "Answer value must be of type boolean"
         expression: "QuestionnaireResponse.item[0].item[0].answer[0].value.ofType(string)"
-  - name: "Expecting 2 errors and 1 warning but only finds 2 errors"
+  - title: "Expecting 2 errors and 1 warning but only finds 2 errors"
     source: "fhir-instances/questionnaireResponse-instance.json"
     expectedIssues:
       - severity: ERROR

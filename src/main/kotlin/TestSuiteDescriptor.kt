@@ -11,7 +11,7 @@ class TestSuiteDescriptor(
     id: UniqueId,
     private val spec: Specification,
     source: TestSource
-) : AbstractTestDescriptor(id, spec.name, source), Node<FhirValidatorExecutionContext> {
+) : AbstractTestDescriptor(id, spec.title, source), Node<FhirValidatorExecutionContext> {
     override fun getType() = TestDescriptor.Type.CONTAINER
     override fun execute(
         context: FhirValidatorExecutionContext,
@@ -31,11 +31,11 @@ class TestSuiteDescriptor(
 private fun createReportEntry(spec: Specification.Validator) =
     spec.run {
         val values = mapOf(
-            Pair(Specification.Validator::version.name, version),
-            Pair(Specification.Validator::terminologyService.name, terminologyService),
-            Pair(Specification.Validator::terminologyServiceLog.name, terminologyServiceLog),
-            Pair(Specification.Validator::snomedCtEdition.name, snomedCtEdition),
-            Pair(Specification.Validator::igs.name, if (igs.isEmpty()) null else igs.joinToString())
+            Pair("version", version),
+            Pair("tx", terminologyService),
+            Pair("txLog", terminologyServiceLog),
+            Pair("sct", snomedCtEdition),
+            Pair("ig", if (igs.isEmpty()) null else igs.joinToString())
         ).filterValues { it != null }
 
         ReportEntry.from(values)

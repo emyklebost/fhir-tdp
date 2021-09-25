@@ -1,12 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "title": "Tests",
-  "description": "Test Cases",
+  "title": "FHIR Validator test specification",
+  "description": "Specification for tests which uses the FHIR Validator to validate FHIR resources against FHIR conformance resources.",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "$schema": true,
-    "name": {
+    "title": {
       "description": "[Optional] Human readable name of the Test Suite, the default is to use the filename.",
       "type": "string"
     },
@@ -85,7 +85,7 @@
             "description": "[Required] Relative path to the FHIR resource file (xml or json) to validate.",
             "type": "string"
           },
-          "name": {
+          "title": {
             "description": "[Optional] Human readable name of the Test Case, the default is the 'source' value.",
             "type": "string"
           },
