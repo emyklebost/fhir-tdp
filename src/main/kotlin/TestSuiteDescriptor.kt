@@ -36,7 +36,7 @@ private fun createReportEntry(spec: Specification.Validator) =
             Pair("txLog", terminologyServiceLog),
             Pair("sct", snomedCtEdition),
             Pair("ig", igs.joinToString())
-        )
+        ).filterValues { !it.isNullOrEmpty() }
 
-        ReportEntry.from(values.filterValues { !it.isNullOrEmpty() })
+        ReportEntry.from(values)
     }
