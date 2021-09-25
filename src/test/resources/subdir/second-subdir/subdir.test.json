@@ -15,6 +15,22 @@
       "profile": "http://fhir.nav.no/StructureDefinition/HopsMessage"
     },
     {
+      "source": "../../fhir-instances/message-with-profile-and-expected-errors.json",
+      "tags": [
+        "with-profile"
+      ],
+      "expectedIssues": [
+        {
+          "severity": "ERROR",
+          "expression": "Bundle.entry[0].resource.ofType(MessageHeader).meta"
+        },
+        {
+          "severity": "ERROR",
+          "message": "Must be a valid HER-ID"
+        }
+      ]
+    },
+    {
       "source": "../../fhir-instances/message-with-expected-errors.json",
       "profile": "http://fhir.nav.no/StructureDefinition/HopsMessage",
       "expectedIssues": [

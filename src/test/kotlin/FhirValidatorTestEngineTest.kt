@@ -2,6 +2,7 @@ import no.nav.FhirValidatorTestEngine
 import org.junit.jupiter.api.Test
 import org.junit.platform.engine.discovery.DiscoverySelectors.selectDirectory
 import org.junit.platform.engine.discovery.DiscoverySelectors.selectFile
+import org.junit.platform.launcher.TagFilter
 import org.junit.platform.testkit.engine.EngineTestKit
 
 class FhirValidatorTestEngineTest {
@@ -10,10 +11,24 @@ class FhirValidatorTestEngineTest {
         EngineTestKit
             .engine(FhirValidatorTestEngine())
             .selectors(selectDirectory("src/test/resources/subdir"))
+            .filters(TagFilter.excludeTags("with-profile"))
             .execute()
             .testEvents()
             .assertStatistics {
                 it.started(3).succeeded(1).failed(2).aborted(0).skipped(0)
+            }
+    }
+
+    @Test
+    fun `Filtered by tag, test should validate using meta-profile`() {
+        EngineTestKit
+            .engine(FhirValidatorTestEngine())
+            .selectors(selectDirectory("src/test/resources/subdir/second-subdir"))
+            .filters(TagFilter.includeTags("with-profile"))
+            .execute()
+            .testEvents()
+            .assertStatistics {
+                it.started(1).succeeded(1).failed(0).aborted(0).skipped(0)
             }
     }
 
