@@ -24,7 +24,7 @@ class TestCaseDescriptor(
         context: FhirValidatorExecutionContext,
         dynamicTestExecutor: Node.DynamicTestExecutor
     ): FhirValidatorExecutionContext {
-        println("> " + Color.TITLE.paint("TEST: $displayName"))
+        println(Color.TITLE.paint("> TEST: $displayName"))
         println("  Location: ${(source.get() as FileSource).toUrl()}")
         if (tags.any()) { println(Color.TAGS.paint("  Tags: ${tags.joinToString { it.name }}")) }
 
@@ -68,18 +68,22 @@ private fun createSummary(outcome: OperationOutcome, failedAssertions: List<Asse
 
         outcome.issue.forEachIndexed { i, it ->
             val issue = it.toData()
-            append("${i + 1}", issue, it.sourceUrl(), unexpectedIssues.any { mi -> mi.semanticallyEquals(issue) })
+            val color =
+                if (unexpectedIssues.any { mi -> mi.semanticallyEquals(issue) }) Color.FAILED
+                else if (issue.severity in listOf(Severity.INFORMATION, Severity.WARNING)) Color.INFO
+                else Color.SUCCESSFUL
+
+            append("${i + 1}", issue, it.sourceUrl(), color)
         }
 
         missingIssues.forEach {
-            append("X", it, "N/A", true)
+            append("X", it, "N/A", Color.FAILED)
         }
 
         toString()
     }
 
-private fun StringBuilder.append(mark: String, issueSpec: Specification.Issue, source: String?, fail: Boolean) {
-    val color = if (fail) Color.FAILED else Color.INFO
+private fun StringBuilder.append(mark: String, issueSpec: Specification.Issue, source: String?, color: Color) {
     appendLine(color.paint("  $mark. Source: $source"))
     appendLine(color.paint("     Severity: ${issueSpec.severity}"))
     appendLine(color.paint("     Type: ${issueSpec.type}"))
