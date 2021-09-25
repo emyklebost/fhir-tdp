@@ -17,12 +17,14 @@ class TestSuiteDescriptor(
         context: FhirValidatorExecutionContext,
         dynamicTestExecutor: Node.DynamicTestExecutor
     ) = try {
-        context.copy(validator = FhirValidator.create(spec.validator)).apply {
-            println() // Empty line for log readability.
-        }
+        println(Color.TITLE.paint("# SUITE: $displayName"))
+        context.copy(validator = FhirValidator.create(spec.validator))
     } catch (ex: Throwable) {
         context.listener.reportingEntryPublished(this, createReportEntry(spec.validator))
+        println()
         throw ex
+    } finally {
+        println()
     }
 }
 
