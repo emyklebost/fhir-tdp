@@ -12,7 +12,7 @@ class UnexpectedIssue(val issueSpec: Specification.Issue, val source: String?) :
                 .filterNot { testSpec.expectedIssues.any { expected -> expected.semanticallyEquals(it.issueSpec) } }
 
             val color = if (unexpectedErrorFailures.isEmpty()) Color.SUCCESSFUL else Color.FAILED
-            println(color.paint("  ${unexpectedErrorFailures.count()} unexpected error(s)!"))
+            println(color.paint("  ${unexpectedErrorFailures.count()} unexpected errors!"))
 
             return unexpectedErrorFailures
         }
@@ -30,7 +30,7 @@ class MissingIssue(val issueSpec: Specification.Issue) : AssertionFailedError("E
 
             val foundCount = testSpec.expectedIssues.count() - missingIssueFailures.count()
             val color = if (foundCount == testSpec.expectedIssues.count()) Color.SUCCESSFUL else Color.FAILED
-            println(color.paint("  Found $foundCount of ${testSpec.expectedIssues.count()} expected issue(s)!"))
+            println(color.paint("  Found $foundCount of ${testSpec.expectedIssues.count()} expected issues!"))
 
             return missingIssueFailures
         }
