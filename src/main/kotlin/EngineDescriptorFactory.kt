@@ -19,13 +19,13 @@ object EngineDescriptorFactory {
         val engineDesc = EngineDescriptor(engineId, "FHIR Validator")
 
         specFiles.forEachIndexed { tsIndex, path ->
-            val testSuiteId = engineId.append<TestSuiteDescriptor>("$tsIndex")
+            val testSuiteId = engineId.append<TestSuiteDescriptor>(tsIndex)
             val testSuiteSpec = loadConfig(path).run { copy(title = title ?: path.nameWithoutExtension) }
             val testSuiteSource = FileSource.from(path.toFile())
             val testSuiteDesc = TestSuiteDescriptor(testSuiteId, testSuiteSpec, testSuiteSource)
 
             testSuiteSpec.tests.forEachIndexed { tcIndex, testCaseSpec ->
-                val testCaseId = testSuiteId.append<TestCaseDescriptor>("$tcIndex")
+                val testCaseId = testSuiteId.append<TestCaseDescriptor>(tcIndex)
                 val testCaseSource = createFileSource(path, tcIndex)
                 val testCaseDesc = TestCaseDescriptor(testCaseId, testCaseSpec, testCaseSource)
                 testSuiteDesc.addChild(testCaseDesc)
@@ -38,7 +38,7 @@ object EngineDescriptorFactory {
     }
 }
 
-private inline fun <reified T> UniqueId.append(value: String) = append(T::class.simpleName, value)!!
+private inline fun <reified T> UniqueId.append(id: Int) = append(T::class.simpleName, "$id")!!
 
 /** Parsers needs to be explicitly mapped to file-extensions to work with ShadowJar. */
 private val configLoader = ConfigLoader.Builder()
