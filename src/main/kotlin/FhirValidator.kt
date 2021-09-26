@@ -82,12 +82,12 @@ private fun Specification.Validator.toCLIContext(): CliContext {
 
     args.add(Params.STRICT_EXTENSIONS)
     args.addAll(listOf(Params.QUESTIONNAIRE, QuestionnaireMode.REQUIRED.name))
-    args.addAll(listOf(Params.TERMINOLOGY, terminologyService ?: "n/a"))
+    args.addAll(listOf(Params.TERMINOLOGY, tx ?: "n/a"))
 
-    igs.forEach { args.addAll(listOf(Params.IMPLEMENTATION_GUIDE, it)) }
+    ig.forEach { args.addAll(listOf(Params.IMPLEMENTATION_GUIDE, it)) }
     version?.let { args.addAll(listOf(Params.VERSION, it)) }
-    snomedCtEdition?.let { args.addAll(listOf(Params.SCT, it)) }
-    terminologyServiceLog?.let { args.addAll(listOf(Params.TERMINOLOGY_LOG, it)) }
+    sct?.let { args.addAll(listOf(Params.SCT, it)) }
+    txLog?.let { args.addAll(listOf(Params.TERMINOLOGY_LOG, it)) }
 
     return Params.loadCliContext(args.toTypedArray())
 }

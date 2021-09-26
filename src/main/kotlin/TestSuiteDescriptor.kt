@@ -32,10 +32,10 @@ private fun createReportEntry(spec: Specification.Validator) =
     spec.run {
         val values = mapOf(
             Pair("version", version),
-            Pair("tx", terminologyService),
-            Pair("txLog", terminologyServiceLog),
-            Pair("sct", snomedCtEdition),
-            Pair("ig", igs.joinToString())
+            Pair("tx", tx),
+            Pair("txLog", txLog),
+            Pair("sct", sct),
+            Pair("ig", ig.joinToString())
         ).filterValues { !it.isNullOrEmpty() }
 
         ReportEntry.from(values)

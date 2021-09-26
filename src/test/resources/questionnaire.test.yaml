@@ -2,7 +2,7 @@
 title: "Questionnaire tests"
 validator:
   version: '4.0'
-  "igs": [
+  "ig": [
       "fhir-profiles"
   ]
 tests:

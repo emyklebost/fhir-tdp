@@ -24,7 +24,7 @@
             "4.0.1"
           ]
         },
-        "terminologyService": {
+        "tx": {
           "type": "string",
           "description": "[Optional] The (base) URL of a FHIR terminology service. The default is to not use a terminology service.",
           "default": "n/a",
@@ -32,7 +32,7 @@
             "http://tx.fhir.org"
           ]
         },
-        "terminologyServiceLog": {
+        "txLog": {
           "type": "string",
           "description": "[Optional] Produce a log of the terminology server operations in file. Default value is not to produce a log.",
           "examples": [
@@ -40,7 +40,7 @@
             "logs/tx.txt"
           ]
         },
-        "snomedCtEdition": {
+        "sct": {
           "type": "string",
           "description": "[Optional] Edition of SNOMED CT to use.",
           "examples": [
@@ -55,7 +55,7 @@
             "es"
           ]
         },
-        "igs": {
+        "ig": {
           "type": "array",
           "description": "[Optional] IGs or profile definitions to load. Can be file, folder, URL or package ([id]#[ver]) of an implementation guide. The core profiles will always be loaded.",
           "uniqueItems": true,

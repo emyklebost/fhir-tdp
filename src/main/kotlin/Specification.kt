@@ -32,9 +32,9 @@ data class Specification(
 
     data class Validator(
         val version: String? = null,
-        val terminologyService: String? = null,
-        val terminologyServiceLog: String? = null,
-        val snomedCtEdition: String? = null,
-        val igs: List<String> = emptyList()
+        val tx: String? = null,
+        val txLog: String? = null,
+        val sct: String? = null,
+        val ig: List<String> = emptyList()
     )
 }

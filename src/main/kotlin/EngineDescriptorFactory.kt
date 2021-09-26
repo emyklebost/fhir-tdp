@@ -80,12 +80,12 @@ private fun loadConfig(specPath: Path): Specification {
 
     // An IG can be specified as either package, file, folder or URL.
     // In case of file or folder we want the path to be resolved relative to the specification file.
-    val resolvedIgs = config.validator.igs.map {
+    val resolvedIgs = config.validator.ig.map {
         try { resolveAndNormalize(Path(it)).toString() } catch (ex: Throwable) { it }
     }
 
     return config.copy(
-        validator = config.validator.copy(igs = resolvedIgs),
+        validator = config.validator.copy(ig = resolvedIgs),
         paths = resolvedPaths,
         tests = config.tests.map {
             it.copy(source = resolveAndNormalize(it.source))
