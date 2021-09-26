@@ -40,13 +40,16 @@ class FhirValidatorTestEngine : HierarchicalTestEngine<FhirValidatorExecutionCon
 }
 
 // See https://junit.org/junit5/docs/current/user-guide/#running-tests-config-params
-private data class Config(val selectDirectory: Path?, val postfix: String) {
+data class Config(val selectDirectory: Path?, val postfix: String) {
     companion object {
+        var disableAnsiColors: Boolean = false
         fun create(params: ConfigurationParameters) =
             params.run {
+                disableAnsiColors = get("disable-ansi-colors").orElseGet { "false" }.toBoolean()
+
                 Config(
                     get("select-directory").run { if (isPresent) Path(get()) else null },
-                    get("postfix").run { if (isPresent) get() else "test" }
+                    get("postfix").orElseGet { "test" }
                 )
             }
     }

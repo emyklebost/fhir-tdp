@@ -5,7 +5,7 @@ enum class Color(private val ansiCode: Int) {
     NONE(0), RED(31), GREEN(32), YELLOW(33), BLUE(34), CYAN(36);
 
     override fun toString() = "\u001B[${ansiCode}m"
-    fun paint(text: String) = "$this$text$NONE"
+    fun paint(text: String) = if (Config.disableAnsiColors) text else "$this$text$NONE"
 
     // Trying to adhere to Junit TestExecutionSummary's coloring-scheme. */
     companion object {
