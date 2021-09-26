@@ -1,5 +1,6 @@
 package no.nav
 
+import com.github.shyiko.klob.Glob
 import com.sksamuel.hoplite.ConfigLoader
 import com.sksamuel.hoplite.json.JsonParser
 import com.sksamuel.hoplite.yaml.YamlParser
@@ -27,9 +28,22 @@ object EngineDescriptorFactory {
 
             testSuiteSpec.tests.forEachIndexed { tcIndex, testCaseSpec ->
                 val testCaseId = testSuiteId.append<TestCaseDescriptor>(tcIndex)
-                val testCaseSource = createFileSource(path, tcIndex)
+                val testCaseSource = createFileSource(path, "source", tcIndex)
                 val testCaseDesc = TestCaseDescriptor(testCaseId, testCaseSpec, testCaseSource)
                 testSuiteDesc.addChild(testCaseDesc)
+            }
+
+            if (testSuiteSpec.paths.any()) {
+                val pathsTestSource = createFileSource(path, "paths", 0)
+
+                testSuiteSpec.paths
+                    .map { Specification.TestCase(Path(it)) }
+                    .filterNot { testSuiteSpec.tests.any { existing -> existing.source == it.source } }
+                    .forEachIndexed { tcIndex, testCaseSpec ->
+                        val testCaseId = testSuiteId.append<TestCaseDescriptor>(testSuiteSpec.tests.count() + tcIndex)
+                        val testCaseDesc = TestCaseDescriptor(testCaseId, testCaseSpec, pathsTestSource)
+                        testSuiteDesc.addChild(testCaseDesc)
+                    }
             }
         }
 
@@ -56,6 +70,14 @@ private fun loadConfig(specPath: Path): Specification {
 
     val config = configLoader.loadConfigOrThrow<Specification>(specPath)
 
+    // Resolves .gitgnore-pattern based paths to absolute paths.
+    val resolvedPaths = Glob
+        .from(*config.paths.toTypedArray())
+        .iterate(specPath.parent)
+        .asSequence()
+        .map { it.toString() }
+        .toList()
+
     // An IG can be specified as either package, file, folder or URL.
     // In case of file or folder we want the path to be resolved relative to the specification file.
     val resolvedIgs = config.validator.igs.map {
@@ -64,15 +86,15 @@ private fun loadConfig(specPath: Path): Specification {
 
     return config.copy(
         validator = config.validator.copy(igs = resolvedIgs),
+        paths = resolvedPaths,
         tests = config.tests.map {
             it.copy(source = resolveAndNormalize(it.source))
         }
     )
 }
 
-/** Creates a FileSource with FilePosition (line, column) of the 'source' property
- ** of the Test at [[testIndex]]. Works with both json and yaml files. */
-private fun createFileSource(specPath: Path, testIndex: Int): FileSource {
+/** Creates a FileSource with FilePosition (line, column) of the property within json or yaml file. */
+private fun createFileSource(specPath: Path, property: String, index: Int): FileSource {
     fun findAllMatches(pattern: Regex) =
         sequence<FilePosition> {
             val commentLinePattern = Regex("^ *#")
@@ -87,7 +109,7 @@ private fun createFileSource(specPath: Path, testIndex: Int): FileSource {
             }
         }
 
-    val pattern = if (specPath.name.endsWith(".json")) "\"source\"" else "[ {]source: "
-    val filePosition = findAllMatches(Regex(pattern)).elementAtOrNull(testIndex)
+    val pattern = if (specPath.name.endsWith(".json")) "\"$property\"" else "(^|[ {])$property:"
+    val filePosition = findAllMatches(Regex(pattern)).elementAt(index)
     return FileSource.from(specPath.toFile(), filePosition)
 }

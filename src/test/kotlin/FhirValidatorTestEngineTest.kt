@@ -55,4 +55,16 @@ class FhirValidatorTestEngineTest {
                 it.started(2).succeeded(1).failed(1).aborted(0).skipped(0)
             }
     }
+
+    @Test
+    fun `Given a test with glob paths, should generate tests`() {
+        EngineTestKit
+            .engine(FhirValidatorTestEngine())
+            .selectors(selectFile("src/test/resources/glob-pattern.test.yaml"))
+            .execute()
+            .testEvents()
+            .assertStatistics {
+                it.started(1).succeeded(1).failed(0).aborted(0).skipped(0)
+            }
+    }
 }
