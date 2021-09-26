@@ -64,7 +64,7 @@ private val configLoader = ConfigLoader.Builder()
 private fun loadConfig(specPath: Path): Specification {
     fun resolveAndNormalize(path: Path): Path {
         if (path.isAbsolute) return path
-        val dir = if (specPath.isDirectory()) specPath else specPath.parent
+        val dir = if (specPath.isDirectory()) specPath else specPath.toAbsolutePath().parent
         return dir.resolve(path).normalize()
     }
 
@@ -73,7 +73,7 @@ private fun loadConfig(specPath: Path): Specification {
     // Resolves .gitgnore-pattern based paths to absolute paths.
     val resolvedPaths = Glob
         .from(*config.paths.toTypedArray())
-        .iterate(specPath.parent)
+        .iterate(specPath.toAbsolutePath().parent)
         .asSequence()
         .map { it.toString() }
         .toList()
