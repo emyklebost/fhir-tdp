@@ -23,6 +23,7 @@ object EngineDescriptorFactory {
             val testSuiteSpec = loadConfig(path).run { copy(title = title ?: path.nameWithoutExtension) }
             val testSuiteSource = FileSource.from(path.toFile())
             val testSuiteDesc = TestSuiteDescriptor(testSuiteId, testSuiteSpec, testSuiteSource)
+            engineDesc.addChild(testSuiteDesc)
 
             testSuiteSpec.tests.forEachIndexed { tcIndex, testCaseSpec ->
                 val testCaseId = testSuiteId.append<TestCaseDescriptor>(tcIndex)
@@ -30,8 +31,6 @@ object EngineDescriptorFactory {
                 val testCaseDesc = TestCaseDescriptor(testCaseId, testCaseSpec, testCaseSource)
                 testSuiteDesc.addChild(testCaseDesc)
             }
-
-            engineDesc.addChild(testSuiteDesc)
         }
 
         return engineDesc
