@@ -1,1 +1,1 @@
-rootProject.name = "fhir-validator-junit"
+rootProject.name = "fhir-validator-junit-engine"

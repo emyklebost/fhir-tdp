@@ -22,7 +22,7 @@ private const val PARALLEL_CONFIG_PREFIX = "no.nav.execution.parallel.config."
 
 class FhirValidatorTestEngine : HierarchicalTestEngine<FhirValidatorExecutionContext>() {
     // See https://junit.org/junit5/docs/current/user-guide/#launcher-api-engines-custom
-    override fun getId() = "fhir-validator-junit"
+    override fun getId() = "fhir-validator-junit-engine"
 
     override fun discover(discoveryRequest: EngineDiscoveryRequest, uniqueId: UniqueId): TestDescriptor {
         val specFiles = discoveryRequest.run {
